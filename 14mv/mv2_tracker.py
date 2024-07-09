@@ -72,12 +72,12 @@ def is_main_combination(brackets):
     return len(brackets) == 2 and brackets[0] in LHS and brackets[1] in RHS
 
 def is_attachment(brackets):
-    # RHS_CLUE + RHS_SUB
-    return len(brackets) == 2 and brackets[0] in RHS_CLUE and brackets[1] in RHS_SUB
+    # RHS_SUB + RHS_CLUE
+    return len(brackets) == 2 and brackets[0] in RHS_SUB and brackets[1] in RHS_CLUE
 
 def is_main_attchement(brackets):
-    # RHS_CLUE + RHS_SUB, not in EXCL_ATTACHMENTS
-    return is_attachment(brackets) and (brackets[0], brackets[1]) not in EXCL_ATTACHMENTS
+    # RHS_SUB + RHS_CLUE, not in EXCL_ATTACHMENTS
+    return is_attachment(brackets) and (brackets[1], brackets[0]) not in EXCL_ATTACHMENTS
 
 def is_attachment_combination(brackets):
     # LHS_FULL + attachment
@@ -113,20 +113,21 @@ def is_combination_alt(brackets):
     # LHS + LHS
     return len(brackets) == 2 and brackets[0] in LHS and brackets[1] in LHS
 
-def update(progress, category, bangs):
-    progress[bangs][CATEGORY[category][1]] += 1
+def update(progress, category, bangs, ult):
+    progress[0][bangs][CATEGORY[category][1]] += 1
+    if ult:
+        progress[1][bangs][CATEGORY[category][1]] += 1
 
 def main():
     has_save = False
     for i in range(0, 4):
         if os.path.exists(os.path.join(save_path, f'{i}', 'minevar_v2.save')):
             has_save = True
-            progress = [
-                [0 for _ in range(8)] for _ in range(3)
-            ]
+            progress = [[[0 for _ in range(8)] for _ in range(3)] for _ in range(2)]
             total = 0
+            total_ult = 0
 
-            print(f'Save {i+1}:')
+            print(f'Save {i+1}')
             with open(os.path.join(save_path, f'{i}', 'minevar_v2.save'), 'r') as f:
                 data = json.load(f)
 
@@ -140,64 +141,66 @@ def main():
                     brackets = get_brackets(problem)
                     bangs = get_bangs(problem)
                     size = get_size(problem)
+                    ult = (count > 64)
                     total += 1
+                    if ult:
+                        total_ult += 1
 
                     if is_main_variants(brackets):
                         # F and gallery
-                        update(progress, 'F', bangs)
-                        update(progress, size, bangs)
+                        update(progress, 'F', bangs, ult)
+                        update(progress, size, bangs, ult)
                     
                     if is_bonus_variants(brackets):
                         # ? and gallery
-                        update(progress, '?', bangs)
-                        update(progress, size, bangs)
+                        update(progress, '?', bangs, ult)
+                        update(progress, size, bangs, ult)
                     
                     if is_combination(brackets):
                         # main: F and gallery
                         # side: gallery
-                        update(progress, size, bangs)
+                        update(progress, size, bangs, ult)
                         if is_main_combination(brackets):
-                            update(progress, 'F', bangs)
+                            update(progress, 'F', bangs, ult)
                     
                     if is_attachment(brackets):
                         # main: F, &' and gallery
                         # side: &'
-                        update(progress, '&\'', bangs)
+                        update(progress, '&\'', bangs, ult)
                         if is_main_attchement(brackets):
-                            update(progress, 'F', bangs)
-                            update(progress, size, bangs)
+                            update(progress, 'F', bangs, ult)
+                            update(progress, size, bangs, ult)
 
                     if is_attachment_combination(brackets):
                         # main: F, gallery
                         # side: gallery
-                        update(progress, size, bangs)
+                        update(progress, size, bangs, ult)
                         if is_main_attachment_combination(brackets):
-                            update(progress, 'F', bangs)
+                            update(progress, 'F', bangs, ult)
                     
                     if is_tag(brackets):
                         # main: F, gallery
                         # side: gallery
-                        update(progress, size, bangs)
+                        update(progress, size, bangs, ult)
                         if is_main_combination_tag(brackets):
-                            update(progress, 'F', bangs)
+                            update(progress, 'F', bangs, ult)
                     
                     if is_combination_tag(brackets):
                         # main: F, gallery
                         # side: gallery
-                        update(progress, size, bangs)
+                        update(progress, size, bangs, ult)
                         if is_main_combination_tag(brackets):
-                            update(progress, 'F', bangs)
+                            update(progress, 'F', bangs, ult)
                     
                     if is_combination_alt(brackets):
                         # +'
-                        update(progress, '+\'', bangs)
+                        update(progress, '+\'', bangs, ult)
                     
                     if is_attachment_alt(brackets):
                         # &'
-                        update(progress, '&\'', bangs)
-                    
+                        update(progress, '&\'', bangs, ult)
             
-            print_progress(progress, total)
+            print_progress(progress, [total, total_ult])
 
     if not has_save:
         print('Data save not found.')
@@ -205,7 +208,14 @@ def main():
 
 def print_progress(progress, total):
     for k, v in CATEGORY.items():
-        print(f'{k}\t{progress[v[0]][v[1]]}')
+        if (progress[0][v[0]][v[1]] > 0 and total[1] > 0):
+            print(f'{k}\t{progress[0][v[0]][v[1]]}+{progress[1][v[0]][v[1]]}')
+        else:
+            print(f'{k}\t{progress[0][v[0]][v[1]]}')
+    if total[1] > 0:
+        print(f'==\t{total[0]}+{total[1]}')
+    else:
+        print(f'==\t{total[0]}')
 
 if __name__ == '__main__':
     main()
