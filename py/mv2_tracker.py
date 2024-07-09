@@ -6,7 +6,7 @@ import os
 import json
 import re
 
-# C:\Users\Color\AppData\Roaming\Godot\app_userdata\Minesweeper Variants 2\{0,1,2,3}\minevar_v2.save
+# C:\Users\USERNAME\AppData\Roaming\Godot\app_userdata\Minesweeper Variants 2\{0,1,2,3}\minevar_v2.save
 
 save_path = os.path.join(os.getenv('APPDATA'), 'Godot', 'app_userdata', 'Minesweeper Variants 2')
 
@@ -22,7 +22,7 @@ RHS_BONUS = ("2X'", "2I")
 BONUS = LHS_BONUS + RHS_BONUS
 LHS_FULL = LHS + LHS_BONUS
 RHS_FULL = RHS + RHS_BONUS
-ATTCHMENT_BONUS = ("2E'", "2E^", "2L'")
+ATTACHMENT_BONUS = ("2E'", "2E^", "2L'")
 EXCL_ATTACHMENTS = (
     ("2E", "2P"), ("2E", "2M"), ("2L", "2A")
 )
@@ -47,28 +47,9 @@ CATEGORY = {
     "8!": (1, 7)
 }
 
-# F       64105
-# !       59192
-# !!      3634
-# +'      2800
-# +'!     2523
-# &'      6941
-# &'!     7019
-# ?       1600
-# ?!      1583
-# 5       19094
-# 5!      16716
-# 6       19100
-# 6!      17408
-# 7       17863
-# 7!      17937
-# 8       19050
-# 8!      18179
-# ==      159731
-
 COUNTER = (
-    (64105, 2800, 6941, 1600, 19094, 19100, 17863, 19050),
-    (59192, 2523, 7019, 1583, 16716, 17408, 17937, 18179),
+    (54692, 3200, 5453, 1600, 19294, 19300, 18063, 19250),
+    (50454, 2923, 5419, 1454, 16843, 17581, 18132, 18351),
     (3634, 0, 0, 0, 0, 0, 0, 0)
 )
 
@@ -87,8 +68,11 @@ def get_size(problem):
     return int(re.search(r'[5-8]x\d', problem).group()[0])
 
 def get_brackets(problem):
-    # find all brackets, the text surrounded must be alphanumeric
-    return re.findall(r'\[(\w+)\]', problem)
+    # return re.findall(r'\[(\w+)\]', problem)
+    ret = re.findall(r'\[(.*?)\]', problem)
+    if ret[-1] == '@c':
+        return ret[:-1]
+    return ret
 
 def is_combination(brackets):
     # LHS_FULL + RHS_FULL
@@ -116,7 +100,7 @@ def is_main_attachment_combination(brackets):
 
 def is_tag(brackets):
     # RHS_SUB + TAG
-    return len(brackets) == 2 and brackets[1] in TAG
+    return len(brackets) == 2 and brackets[1] == TAG[0]
 
 def is_combination_tag(brackets):
     # LHS_FULL + tag
@@ -133,12 +117,13 @@ def is_bonus_variants(brackets):
     return len(brackets) == 1 and brackets[0] in BONUS
 
 def is_attachment_alt(brackets):
-    return (len(brackets) == 1 and brackets[0] in ATTCHMENT_BONUS) \
+    return (len(brackets) == 1 and brackets[0] in ATTACHMENT_BONUS) \
         or (len(brackets) == 2 and brackets[0] == '2E' and brackets[1] == '2L')
 
 def is_combination_alt(brackets):
     # LHS + LHS
-    return len(brackets) == 2 and brackets[0] in LHS and brackets[1] in LHS
+    return len(brackets) == 2 and ((brackets[0] in LHS and brackets[1] in LHS) \
+        or (brackets[0] == '2G' and brackets[1] == 'R+'))
 
 def update(progress, category, bangs, ult=False):
     progress[0][bangs][CATEGORY[category][1]] += 1
@@ -206,11 +191,10 @@ def main():
                             update(progress, 'F', bangs, ult)
                     
                     if is_tag(brackets):
-                        # main: F, gallery
-                        # side: gallery
+                        # F, &', gallery
                         update(progress, size, bangs, ult)
-                        if is_main_combination_tag(brackets):
-                            update(progress, 'F', bangs, ult)
+                        update(progress, 'F', bangs, ult)
+                        update(progress, '&\'', bangs, ult)
                     
                     if is_combination_tag(brackets):
                         # main: F, gallery
@@ -234,24 +218,15 @@ def main():
         print(f'Check {save_path} for save files.')
 
 def print_progress(progress, total):
-    # for k, v in CATEGORY.items():
-    #     if (total[1] > 0 and progress[0][v[0]][v[1]] > 0):
-    #         print(f'{k}\t{progress[0][v[0]][v[1]]}+{progress[1][v[0]][v[1]]}', end='')
-    #     else:
-    #         print(f'{k}\t{progress[0][v[0]][v[1]]}', end='')
-    #     print(f'/{COUNTER[v[0]][v[1]]} ({progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]:.2%})')
-    # if total[1] > 0:
-    #     print(f'==\t{total[0]}+{total[1]}', end='')
-    # else:
-    #     print(f'==\t{total[0]}', end='')
-    # print(f'/{TOTAL} ({total[0]/TOTAL:.2%})')
-    
-    len_max = max([len(str(x)) for x in COUNTER[0]])
-    len_total = len(str(TOTAL))
-    fmt = '{0:<4}{1:>%d} /{2:>%d} ({3:.2%%})' % (len_max, len_total)
+    lens = [
+        len(str(total[0])),
+        min(len(str(TOTAL)), 1 + len(str(total[1]))),
+        len(str(TOTAL))
+    ]
+    fmt = '{0:<4}{1:>%d} /{2:>%d} ({3:.2%%})' % (lens[0], lens[2])
 
     if total[1] > 0:
-        fmt = '{0:<4}{1:>%d} +{2:>%d} /{3:>%d} ({4:.2%%})' % (len_max, len_max, len_total)
+        fmt = '{0:<4}{1:>%d} +{2:>%d} /{3:>%d} ({4:.2%%})' % (lens[0], lens[1], lens[2])
         for k, v in CATEGORY.items():
             print(fmt.format(k, progress[0][v[0]][v[1]], progress[1][v[0]][v[1]], COUNTER[v[0]][v[1]], progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]))
         print(fmt.format('==', total[0], total[1], TOTAL, total[0]/TOTAL))
@@ -259,8 +234,6 @@ def print_progress(progress, total):
         for k, v in CATEGORY.items():
             print(fmt.format(k, progress[0][v[0]][v[1]], COUNTER[v[0]][v[1]], progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]))
         print(fmt.format('==', total[0], TOTAL, total[0]/TOTAL))
-
-
 
 if __name__ == '__main__':
     main()
