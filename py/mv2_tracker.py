@@ -48,8 +48,8 @@ CATEGORY = {
 }
 
 COUNTER = (
-    (54692, 3200, 5453, 1600, 19294, 19300, 18063, 19250),
-    (50454, 2923, 5419, 1454, 16843, 17581, 18132, 18351),
+    (53492, 3200, 5453, 1600, 18994, 19000, 17763, 18950),
+    (49422, 2923, 5419, 1454, 16559, 17348, 17878, 18090),
     (3634, 0, 0, 0, 0, 0, 0, 0)
 )
 
@@ -88,7 +88,7 @@ def is_attachment(brackets):
 
 def is_main_attchement(brackets):
     # RHS_SUB + RHS_CLUE, not in EXCL_ATTACHMENTS
-    return is_attachment(brackets) and (brackets[1], brackets[0]) not in EXCL_ATTACHMENTS
+    return is_attachment(brackets) and (brackets[0], brackets[1]) not in EXCL_ATTACHMENTS
 
 def is_attachment_combination(brackets):
     # LHS_FULL + attachment
