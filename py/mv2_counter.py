@@ -54,6 +54,7 @@ def main():
             if is_tag(brackets):
                 update(count, size, bangs)
                 update(count, 'F', bangs)
+                update(count, '&\'', bangs)
             
             if is_combination_tag(brackets):
                 update(count, size, bangs)
@@ -76,10 +77,10 @@ def main():
             print('),')
         print(')')
         
-        seen_list = list(seen)
-        seen_list.sort()
-        for brackets in seen_list:
-            print(brackets)
+        # seen_list = list(seen)
+        # seen_list.sort()
+        # for brackets in seen_list:
+        #     print(brackets)
 
 if __name__ == "__main__":
     main()
