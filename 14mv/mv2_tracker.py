@@ -1,0 +1,211 @@
+# 14 Minesweeper Variants 2
+# Save Progress Tracker
+# By: Mojimoon
+
+import os
+import json
+import re
+
+# C:\Users\Color\AppData\Roaming\Godot\app_userdata\Minesweeper Variants 2\{0,1,2,3}\minevar_v2.save
+
+save_path = os.path.join(os.getenv('APPDATA'), 'Godot', 'app_userdata', 'Minesweeper Variants 2')
+
+V = ("V", )
+TAG = ("2#", )
+LHS = ("2H", "2C", "2S", "2G", "2F", "2B", "2T")
+RHS_CLUE = ("2X", "2D", "2P", "2M", "2A")
+RHS_SUB = ("2E", "2L")
+RHS = RHS_CLUE + RHS_SUB
+MAIN = V + LHS + RHS
+LHS_BONUS = ("2Z", "2G'")
+RHS_BONUS = ("2X'", "2I")
+BONUS = LHS_BONUS + RHS_BONUS
+LHS_FULL = LHS + LHS_BONUS
+RHS_FULL = RHS + RHS_BONUS
+ATTCHMENT_BONUS = ("2E'", "2E^", "2L'")
+EXCL_ATTACHMENTS = (
+    ("2E", "2P"), ("2E", "2M"), ("2L", "2A")
+)
+
+CATEGORY = {
+    "F": (0, 0),
+    "!": (1, 0),
+    "!!": (2, 0),
+    "+'": (0, 1),
+    "+'!": (1, 1),
+    "&'": (0, 2),
+    "&'!": (1, 2),
+    "?": (0, 3),
+    "?!": (1, 3),
+    5: (0, 4),
+    "5!": (1, 4),
+    6: (0, 5),
+    "6!": (1, 5),
+    7: (0, 6),
+    "7!": (1, 6),
+    8: (0, 7),
+    "8!": (1, 7)
+}
+
+def get_bangs(problem):
+    for i in range(0, len(problem)):
+        if problem[i] == '!':
+            if i < len(problem) - 1 and problem[i+1] == '!':
+                return 2
+            return 1
+    return 0
+
+def get_size(problem):
+    # get "5x?", "6x?", "7x?", "8x?" but discard the second number
+    return int(re.search(r'[5-8]x\d', problem).group()[0])
+
+def get_brackets(problem):
+    # find all brackets, the text surrounded must be alphanumeric
+    return re.findall(r'\[(\w+)\]', problem)
+
+def is_combination(brackets):
+    # LHS_FULL + RHS_FULL
+    return len(brackets) == 2 and brackets[0] in LHS_FULL and brackets[1] in RHS_FULL
+
+def is_main_combination(brackets):
+    # LHS + RHS
+    return len(brackets) == 2 and brackets[0] in LHS and brackets[1] in RHS
+
+def is_attachment(brackets):
+    # RHS_CLUE + RHS_SUB
+    return len(brackets) == 2 and brackets[0] in RHS_CLUE and brackets[1] in RHS_SUB
+
+def is_main_attchement(brackets):
+    # RHS_CLUE + RHS_SUB, not in EXCL_ATTACHMENTS
+    return is_attachment(brackets) and (brackets[0], brackets[1]) not in EXCL_ATTACHMENTS
+
+def is_attachment_combination(brackets):
+    # LHS_FULL + attachment
+    return len(brackets) == 3 and brackets[0] in LHS_FULL and is_attachment(brackets[1:])
+
+def is_main_attachment_combination(brackets):
+    # LHS + main attachment
+    return len(brackets) == 3 and brackets[0] in LHS and is_main_attchement(brackets[1:])
+
+def is_tag(brackets):
+    # RHS_SUB + TAG
+    return len(brackets) == 2 and brackets[1] in TAG
+
+def is_combination_tag(brackets):
+    # LHS_FULL + tag
+    return len(brackets) == 3 and brackets[0] in LHS_FULL and is_tag(brackets[1:])
+
+def is_main_combination_tag(brackets):
+    # LHS + tag
+    return len(brackets) == 3 and brackets[0] in LHS and is_tag(brackets[1:])
+
+def is_main_variants(brackets):
+    return len(brackets) == 1 and brackets[0] in MAIN
+
+def is_bonus_variants(brackets):
+    return len(brackets) == 1 and brackets[0] in BONUS
+
+def is_attachment_alt(brackets):
+    return (len(brackets) == 1 and brackets[0] in ATTCHMENT_BONUS) \
+        or (len(brackets) == 2 and brackets[0] == '2E' and brackets[1] == '2L')
+
+def is_combination_alt(brackets):
+    # LHS + LHS
+    return len(brackets) == 2 and brackets[0] in LHS and brackets[1] in LHS
+
+def update(progress, category, bangs):
+    progress[bangs][CATEGORY[category][1]] += 1
+
+def main():
+    has_save = False
+    for i in range(0, 4):
+        if os.path.exists(os.path.join(save_path, f'{i}', 'minevar_v2.save')):
+            has_save = True
+            progress = [
+                [0 for _ in range(8)] for _ in range(3)
+            ]
+            total = 0
+
+            print(f'Save {i+1}:')
+            with open(os.path.join(save_path, f'{i}', 'minevar_v2.save'), 'r') as f:
+                data = json.load(f)
+
+                '''
+                {"Puzzles":{"[2H]5x5-10-725":5,"[2H]5x5-10-322":2,"[2H]5x5-10-550":5, ...}}
+                '''
+
+                for problem, count in data['Puzzles'].items():
+                    if count % 8 != 5:
+                        continue
+                    brackets = get_brackets(problem)
+                    bangs = get_bangs(problem)
+                    size = get_size(problem)
+                    total += 1
+
+                    if is_main_variants(brackets):
+                        # F and gallery
+                        update(progress, 'F', bangs)
+                        update(progress, size, bangs)
+                    
+                    if is_bonus_variants(brackets):
+                        # ? and gallery
+                        update(progress, '?', bangs)
+                        update(progress, size, bangs)
+                    
+                    if is_combination(brackets):
+                        # main: F and gallery
+                        # side: gallery
+                        update(progress, size, bangs)
+                        if is_main_combination(brackets):
+                            update(progress, 'F', bangs)
+                    
+                    if is_attachment(brackets):
+                        # main: F, &' and gallery
+                        # side: &'
+                        update(progress, '&\'', bangs)
+                        if is_main_attchement(brackets):
+                            update(progress, 'F', bangs)
+                            update(progress, size, bangs)
+
+                    if is_attachment_combination(brackets):
+                        # main: F, gallery
+                        # side: gallery
+                        update(progress, size, bangs)
+                        if is_main_attachment_combination(brackets):
+                            update(progress, 'F', bangs)
+                    
+                    if is_tag(brackets):
+                        # main: F, gallery
+                        # side: gallery
+                        update(progress, size, bangs)
+                        if is_main_combination_tag(brackets):
+                            update(progress, 'F', bangs)
+                    
+                    if is_combination_tag(brackets):
+                        # main: F, gallery
+                        # side: gallery
+                        update(progress, size, bangs)
+                        if is_main_combination_tag(brackets):
+                            update(progress, 'F', bangs)
+                    
+                    if is_combination_alt(brackets):
+                        # +'
+                        update(progress, '+\'', bangs)
+                    
+                    if is_attachment_alt(brackets):
+                        # &'
+                        update(progress, '&\'', bangs)
+                    
+            
+            print_progress(progress, total)
+
+    if not has_save:
+        print('Data save not found.')
+        print(f'Check {save_path} for save files.')
+
+def print_progress(progress, total):
+    for k, v in CATEGORY.items():
+        print(f'{k}\t{progress[v[0]][v[1]]}')
+
+if __name__ == '__main__':
+    main()
