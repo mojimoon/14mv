@@ -47,6 +47,33 @@ CATEGORY = {
     "8!": (1, 7)
 }
 
+# F       64105
+# !       59192
+# !!      3634
+# +'      2800
+# +'!     2523
+# &'      6941
+# &'!     7019
+# ?       1600
+# ?!      1583
+# 5       19094
+# 5!      16716
+# 6       19100
+# 6!      17408
+# 7       17863
+# 7!      17937
+# 8       19050
+# 8!      18179
+# ==      159731
+
+COUNTER = (
+    (64105, 2800, 6941, 1600, 19094, 19100, 17863, 19050),
+    (59192, 2523, 7019, 1583, 16716, 17408, 17937, 18179),
+    (3634, 0, 0, 0, 0, 0, 0, 0)
+)
+
+TOTAL = 159731
+
 def get_bangs(problem):
     for i in range(0, len(problem)):
         if problem[i] == '!':
@@ -113,7 +140,7 @@ def is_combination_alt(brackets):
     # LHS + LHS
     return len(brackets) == 2 and brackets[0] in LHS and brackets[1] in LHS
 
-def update(progress, category, bangs, ult):
+def update(progress, category, bangs, ult=False):
     progress[0][bangs][CATEGORY[category][1]] += 1
     if ult:
         progress[1][bangs][CATEGORY[category][1]] += 1
@@ -207,15 +234,33 @@ def main():
         print(f'Check {save_path} for save files.')
 
 def print_progress(progress, total):
-    for k, v in CATEGORY.items():
-        if (progress[0][v[0]][v[1]] > 0 and total[1] > 0):
-            print(f'{k}\t{progress[0][v[0]][v[1]]}+{progress[1][v[0]][v[1]]}')
-        else:
-            print(f'{k}\t{progress[0][v[0]][v[1]]}')
+    # for k, v in CATEGORY.items():
+    #     if (total[1] > 0 and progress[0][v[0]][v[1]] > 0):
+    #         print(f'{k}\t{progress[0][v[0]][v[1]]}+{progress[1][v[0]][v[1]]}', end='')
+    #     else:
+    #         print(f'{k}\t{progress[0][v[0]][v[1]]}', end='')
+    #     print(f'/{COUNTER[v[0]][v[1]]} ({progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]:.2%})')
+    # if total[1] > 0:
+    #     print(f'==\t{total[0]}+{total[1]}', end='')
+    # else:
+    #     print(f'==\t{total[0]}', end='')
+    # print(f'/{TOTAL} ({total[0]/TOTAL:.2%})')
+    
+    len_max = max([len(str(x)) for x in COUNTER[0]])
+    len_total = len(str(TOTAL))
+    fmt = '{0:<4}{1:>%d} /{2:>%d} ({3:.2%%})' % (len_max, len_total)
+
     if total[1] > 0:
-        print(f'==\t{total[0]}+{total[1]}')
+        fmt = '{0:<4}{1:>%d} +{2:>%d} /{3:>%d} ({4:.2%%})' % (len_max, len_max, len_total)
+        for k, v in CATEGORY.items():
+            print(fmt.format(k, progress[0][v[0]][v[1]], progress[1][v[0]][v[1]], COUNTER[v[0]][v[1]], progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]))
+        print(fmt.format('==', total[0], total[1], TOTAL, total[0]/TOTAL))
     else:
-        print(f'==\t{total[0]}')
+        for k, v in CATEGORY.items():
+            print(fmt.format(k, progress[0][v[0]][v[1]], COUNTER[v[0]][v[1]], progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]))
+        print(fmt.format('==', total[0], TOTAL, total[0]/TOTAL))
+
+
 
 if __name__ == '__main__':
     main()
