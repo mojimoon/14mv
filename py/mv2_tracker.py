@@ -139,7 +139,9 @@ def main():
             total = 0
             total_ult = 0
 
+            print('=' * 20)
             print(f'Save {i+1}')
+            print('-' * 20)
             with open(os.path.join(save_path, f'{i}', 'minevar_v2.save'), 'r') as f:
                 data = json.load(f)
 
@@ -216,24 +218,27 @@ def main():
     if not has_save:
         print('Data save not found.')
         print(f'Check {save_path} for save files.')
+    else:
+        print('=' * 20)
 
 def print_progress(progress, total):
     lens = [
         len(str(total[0])),
-        min(len(str(TOTAL)), 1 + len(str(total[1]))),
         len(str(TOTAL))
     ]
-    fmt = '{0:<4}{1:>%d} /{2:>%d} ({3:.2%%})' % (lens[0], lens[2])
+    fmt = '{0:<5}{1:>%d} / {2:>%d} ({3:.2%%})' % (lens[0], lens[1])
 
     if total[1] > 0:
-        fmt = '{0:<4}{1:>%d} +{2:>%d} /{3:>%d} ({4:.2%%})' % (lens[0], lens[1], lens[2])
+        fmt = '{0:<5}{1:>%d} + {2:>%d} / {3:>%d} ({4:.2%%})' % (lens[0], lens[0], lens[1])
         for k, v in CATEGORY.items():
             print(fmt.format(k, progress[0][v[0]][v[1]], progress[1][v[0]][v[1]], COUNTER[v[0]][v[1]], progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]))
-        print(fmt.format('==', total[0], total[1], TOTAL, total[0]/TOTAL))
+        print('-' * 20)
+        print(fmt.format('SUM', total[0], total[1], TOTAL, total[0]/TOTAL))
     else:
         for k, v in CATEGORY.items():
             print(fmt.format(k, progress[0][v[0]][v[1]], COUNTER[v[0]][v[1]], progress[0][v[0]][v[1]]/COUNTER[v[0]][v[1]]))
-        print(fmt.format('==', total[0], TOTAL, total[0]/TOTAL))
+        print('-' * 20)
+        print(fmt.format('SUM', total[0], TOTAL, total[0]/TOTAL))
 
 if __name__ == '__main__':
     main()
