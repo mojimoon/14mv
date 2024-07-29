@@ -88,6 +88,31 @@ const clueTypes = {
       if (i-2 >= 0)   neighbors += m[i-2][j];
       return neighbors;
     },
+    "XW": (i, j, m=mines) => {
+      let neighbors = [];
+      if (j-1 >= 0) {
+        if (j-2 >= 0) neighbors.push(m[i][j-2] + m[i][j-1]);
+        else neighbors.push(m[i][j-1]);
+      }
+      if (i+1 < cols) {
+        if (i+2 < cols) neighbors.push(m[i+1][j] + m[i+2][j]);
+        else neighbors.push(m[i+1][j]);
+      }
+      if (j+1 < rows) {
+        if (j+2 < rows) neighbors.push(m[i][j+1] + m[i][j+2]);
+        else neighbors.push(m[i][j+1]);
+      }
+      if (i-1 >= 0) {
+        if (i-2 >= 0) neighbors.push(m[i-1][j] + m[i-2][j]);
+        else neighbors.push(m[i-1][j]);
+      }
+      neighbors = neighbors.filter(n => n !== 0);
+      if (neighbors.length === 0) {
+        neighbors.push(0);
+      }
+      neighbors.sort((a, b) => a - b);
+      return neighbors.join(" ");
+    },
     "P": (i, j, m=mines) => {
       const offs = [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1]];
       let neighbors = [];
@@ -116,6 +141,14 @@ const clueTypes = {
         neighbors[0] += neighbors.pop();
       }
       return neighbors.length;
+    },
+    "XP": (i, j, m=mines) => {
+      let neighbors = 0;
+      if (j-1 >= 0 && (m[i][j-1] || (j-2 >= 0 && m[i][j-2]))) neighbors++;
+      if (i+1 < cols && (m[i+1][j] || (i+2 < cols && m[i+2][j]))) neighbors++;
+      if (j+1 < rows && (m[i][j+1] || (j+2 < rows && m[i][j+2]))) neighbors++;
+      if (i-1 >= 0 && (m[i-1][j] || (i-2 >= 0 && m[i-2][j]))) neighbors++;
+      return neighbors;
     },
     "E": (i, j, m=mines) => {
       let posI = i;
@@ -148,13 +181,16 @@ const clueTypes = {
     "MB3": (i, j, m=mines) => {
       return base3DigitSum(clueTypes.M(i, j, m));
     },
+    "NB3": (i, j, m=mines) => {
+      return base3DigitSum(clueTypes.N(i, j, m));
+    },
     "#": (i, j, m=mines) => {
       const ct = clueType[i][j];
       return clueTypes[ct](i, j, m);
     }
   }
   
-  const getNeighbors = clueTypes.MB3;
+  const getNeighbors = clueTypes.XW;
   
   // Normal minesweeper clues
   

@@ -25,7 +25,12 @@ document.oncontextmenu = _ => {
   function checkClueType(i, j, ct) {
     return getNeighbors === clueTypes[ct] || getNeighbors === clueTypes["#"] && clueType[i][j] === ct;
   }
-  
+
+  function isX(i, j) {
+    return getNeighbors === clueTypes["XW"] || getNeighbors === clueTypes["XP"] || getNeighbors === clueTypes["X"]
+    || (getNeighbors === clueTypes["#"] && clueType[i][j] === "X");
+  }
+
   function keyPressed() {
     if (key === "d") {
       drawingMode = !drawingMode;
@@ -292,7 +297,7 @@ document.oncontextmenu = _ => {
         noStroke();
         fill(51, 51);
         if (revealed[i][j] && !mines[i][j]) {
-          if (checkClueType(i, j, "X")) {
+          if (isX(i, j)) {
             square(i*sz, j*sz, sz);
             if (j-1 >= 0) square(i*sz, (j-1)*sz, sz);
             if (j-2 >= 0) square(i*sz, (j-2)*sz, sz);

@@ -140,23 +140,22 @@ const restrictions = {
       }
       return new Set(rowCounts).size === rows && new Set(colCounts).size === cols;
     },
-    "XM": (m=mines) => {
-      // Two mines cannot be images of each other, vertically across the center
-      const center = Math.floor(cols/2);
-      for (let i = 0; i < center; i++) {
-        if (i == cols-1-i) {
-          continue;
-        }
-        for (let j = 0; j < rows; j++) {
-          if (m[i][j] && m[cols-1-i][j]) {
-            return false;
-          }
-        }
-      }
-    }
+    // "XM": (m=mines) => {
+    //   const center = Math.floor(cols/2);
+    //   for (let i = 0; i < center; i++) {
+    //     if (i == cols-1-i) {
+    //       continue;
+    //     }
+    //     for (let j = 0; j < rows; j++) {
+    //       if (m[i][j] && m[cols-1-i][j]) {
+    //         return false;
+    //       }
+    //     }
+    //   }
+    // }
   }
   
-  const restriction = restrictions.Q;
+  const restriction = restrictions.V;
   
   // No restrictions (normal minesweeper)
   
