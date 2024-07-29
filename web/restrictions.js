@@ -153,6 +153,31 @@ const restrictions = {
     //     }
     //   }
     // }
+    "T2": (m=mines) => {
+      // There may be no set of three mines in a row, orthogonally
+      // There may be no set of three non-mines in a row, orthogonally
+      for (let i = 0; i < cols-2; i++) {
+        for (let j = 0; j < rows; j++) {
+          if (m[i][j] && m[i+1][j] && m[i+2][j]) {
+            return false;
+          }
+          if (!m[i][j] && !m[i+1][j] && !m[i+2][j]) {
+            return false;
+          }
+        }
+      }
+
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows-2; j++) {
+          if (m[i][j] && m[i][j+1] && m[i][j+2]) {
+            return false;
+          }
+          if (!m[i][j] && !m[i][j+1] && !m[i][j+2]) {
+            return false;
+          }
+        }
+      }
+    }
   }
   
   const restriction = restrictions.V;

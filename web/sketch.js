@@ -27,7 +27,7 @@ document.oncontextmenu = _ => {
   }
 
   function isX(i, j) {
-    return getNeighbors === clueTypes["XW"] || getNeighbors === clueTypes["XP"] || getNeighbors === clueTypes["X"]
+    return getNeighbors === clueTypes["X"] || getNeighbors === clueTypes["XW"] || getNeighbors === clueTypes["XP"] || getNeighbors === clueTypes["MX"] || getNeighbors === clueTypes["NX"] || getNeighbors === clueTypes["LX"] || getNeighbors === clueTypes["MNX"] || getNeighbors === clueTypes["MNXL"]
     || (getNeighbors === clueTypes["#"] && clueType[i][j] === "X");
   }
 
