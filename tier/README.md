@@ -1,9 +1,11 @@
 # 14 Minesweeper Variants 2 Full Tier List
 
-A complete tier list for 14 Minesweeper Variants 2 (14MV2), including all Combinations (+, +') and Attachments (&, &').
+[Tiermaker](https://tiermaker.com/create/14-minesweeper-variants-2-full-combination-andattachment-17377235-2)
 
-To help you locate a specific variant, placeholder cells (+, +', &, &', &+, #, #+) are placed before the beginning of each section.
+A complete tier list for 14 Minesweeper Variants 2 (14MV2), including all Combinations (+, +') and Attachments (&, &'). 
 
-Combinations and attachments can be distinguished by the arrangement of sub-icons. Combinations have top-left and bottom-right ones, while attachments have top-right and bottom-left ones.
+To help you locate a specific variant, placeholder cells (+, +', &, &', &+, #, #+) are placed before the beginning of each section.  
 
-Highlighted cells are bonus variants/combinations/attachments.
+Highlighted cells are bonus variants/combinations/attachments. 
+
+Combinations and attachments can be distinguished by the arrangement of icons. Combinations have top-left and bottom-right ones, while attachments have top-right and bottom-left ones. 

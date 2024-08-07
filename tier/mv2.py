@@ -19,6 +19,10 @@ pwd = os.path.dirname(os.path.abspath(__file__))
 
 os.makedirs(os.path.join(pwd, "output"), exist_ok=True)
 
+# clear output folder
+for f in os.listdir(os.path.join(pwd, "output")):
+    os.remove(os.path.join(pwd, "output", f))
+
 SIZE = 256
 
 counter = 0
@@ -35,7 +39,7 @@ def read(s, opt=False):
 def save(img):
     global counter
     counter += 1
-    img.save(os.path.join(pwd, "output", f"{counter}.png"))
+    img.save(os.path.join(pwd, "output", f"{counter:03d}.png"))
 
 # def combine2(a, b, ol=True):
 #     SIZE = 256  # Assuming SIZE is defined somewhere
