@@ -121,7 +121,7 @@ def main():
     
     save(read("#"))
     for b in TAG:
-        save(combine2(b, "#"))
+        save(combine2_alt(b, "#"))
     
     save(read("#+"))
     for a in LHS_FULL:
