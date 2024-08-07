@@ -8,6 +8,7 @@ RHS = ["X", "D", "P", "E", "M", "A", "L"]
 RHS_BONUS = ["X'", "I"]
 RHS_FULL = ["X", "D", "P", "E", "M", "A", "L", "X'", "I"]
 ATTACH = ["EX", "ED", "EA", "LX", "LD", "LM", "LP"]
+ATTACH_ORD = ["EX", "LD", "LM", "EA", "LX", "ED", "LP"]
 ATTACH_ALT = ["EM", "EP", "LA"]
 ATTACH_BONUS = ["E'", "E^", "L'"]
 COMBO_ALT = ["GH", "CH", "CG", "FG", "FH", "CF", "BH", "GR"]
@@ -41,29 +42,6 @@ def save(img):
     counter += 1
     img.save(os.path.join(pwd, "output", f"{counter:03d}.png"))
 
-# def combine2(a, b, ol=True):
-#     SIZE = 256  # Assuming SIZE is defined somewhere
-#     img = Image.new("RGBA", (SIZE, SIZE), (255, 255, 255, 0))
-    
-#     # Create overlay color
-#     overlay_color = (255, 255, 0, 51) if ol else (255, 255, 255, 0)
-    
-#     # Read and resize images
-#     img_a = read(a).resize((128, 128))
-#     img_b = read(b).resize((128, 128))
-    
-#     # Apply overlay to images
-#     ola = Image.new("RGBA", img_a.size, overlay_color)
-#     olb = Image.new("RGBA", img_b.size, overlay_color)
-#     img_a = Image.alpha_composite(img_a.convert("RGBA"), ola)
-#     img_b = Image.alpha_composite(img_b.convert("RGBA"), olb)
-    
-#     # Paste images onto final image
-#     img.paste(img_a, (0, 0))
-#     img.paste(img_b, (128, 128))
-    
-#     return img
-
 def combine2(a, b, opt=False):
     img = Image.new("RGBA", (SIZE, SIZE), (255, 255, 255, 0))
     img.paste(read(a, opt).resize((128, 128)), (0, 0))
@@ -76,9 +54,21 @@ def combine2_alt(a, b, opt=False):
     img.paste(read(b, opt).resize((128, 128)), (0, 128))
     return img
 
+# def combine2(a, b, opt=False):
+#     img = Image.new("RGBA", (256, 128), (255, 255, 255, 0))
+#     img.paste(read(a, opt).resize((128, 128)), (0, 0))
+#     img.paste(read(b, opt).resize((128, 128)), (128, 0))
+#     return img
+
+# def combine2_alt(a, b, opt=False):
+#     img = Image.new("RGBA", (128, 256), (255, 255, 255, 0))
+#     img.paste(read(a, opt).resize((128, 128)), (0, 0))
+#     img.paste(read(b, opt).resize((128, 128)), (0, 128))
+#     return img
+
 def combine3(a, b, c, opt=False):
     img = Image.new("RGBA", (SIZE, SIZE), (255, 255, 255, 0))
-    img.paste(read(a, opt).resize((128, 128)), (0, 0))
+    img.paste(read(a, opt).resize((128, 128)), (64, 0))
     img.paste(read(b, opt).resize((128, 128)), (0, 128))
     img.paste(read(c, opt).resize((128, 128)), (128, 128))
     return img
