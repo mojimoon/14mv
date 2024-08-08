@@ -18,15 +18,15 @@ pwd = os.path.dirname(os.path.abspath(__file__))
 
 root = os.path.dirname(pwd)
 
-os.makedirs(os.path.join(pwd, "output"), exist_ok=True)
+os.makedirs(os.path.join(pwd, "mv2", "output"), exist_ok=True)
 
-for f in os.listdir(os.path.join(pwd, "output")):
-    os.remove(os.path.join(pwd, "output", f))
+for f in os.listdir(os.path.join(pwd, "mv2", "output")):
+    os.remove(os.path.join(pwd, "mv2", "output", f))
 
 image_dict = (dict(), dict())
 
 font = [
-    ImageFont.truetype("CopperplateCC-Heavy.ttf", 176), # 1 char, 0.6875
+    ImageFont.truetype("CopperplateCC-Heavy.ttf", 184), # 1 char
     ImageFont.truetype("CopperplateCC-Heavy.ttf", 112), # 2 chars
     ImageFont.truetype("CopperplateCC-Heavy.ttf", 80), # 3 chars
     ImageFont.truetype("CopperplateCC-Heavy.ttf", 160), # for E^
@@ -50,7 +50,7 @@ def count_chars(s):
 def save(img):
     global counter
     counter += 1
-    img.save(os.path.join(pwd, "output", f"{counter:03d}.jpg"))
+    img.save(os.path.join(pwd, "mv2", "output", f"{counter:03d}.jpg"))
 
 def create(msg, opt=0):
     canvas = Image.new("RGB", (SIZE, SIZE), color=(0, 0, 0))
