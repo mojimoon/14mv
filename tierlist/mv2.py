@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
+import shutil
 
 LHS = ["H", "C", "S", "G", "F", "B", "T"]
 LHS_BONUS = ["Z", "G'"]
@@ -15,20 +16,19 @@ RHS_BOARD = ["E", "L"]
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
-root = os.path.dirname(pwd)
-
 os.makedirs(os.path.join(pwd, "mv2", "output"), exist_ok=True)
 
-for f in os.listdir(os.path.join(pwd, "mv2", "output")):
-    os.remove(os.path.join(pwd, "mv2", "output", f))
+output_dir = os.path.join(pwd, "mv2", "output")
+replaces_dir = os.path.join(pwd, "mv2", "replaces")
 
-image_dict = (dict(), dict())
+for f in os.listdir(output_dir):
+    os.remove(os.path.join(output_dir, f))
 
 font = [
     ImageFont.truetype("CopperplateCC-Heavy.ttf", 184), # 1 char
-    ImageFont.truetype("CopperplateCC-Heavy.ttf", 112), # 2 chars
-    ImageFont.truetype("CopperplateCC-Heavy.ttf", 80), # 3 chars
-    ImageFont.truetype("CopperplateCC-Heavy.ttf", 160), # for E^
+    ImageFont.truetype("CopperplateCC-Heavy.ttf", 108), # 2 chars
+    ImageFont.truetype("CopperplateCC-Heavy.ttf", 84), # 3 chars
+    ImageFont.truetype("CopperplateCC-Heavy.ttf", 168), # for [E^]
 ]
 
 colors = [
@@ -49,7 +49,7 @@ def count_chars(s):
 def save(img):
     global counter
     counter += 1
-    img.save(os.path.join(pwd, "mv2", "output", f"{counter:03d}.jpg"))
+    img.save(os.path.join(output_dir, f"{counter:03d}.jpg"))
 
 def create(msg, opt=0):
     canvas = Image.new("RGB", (SIZE, SIZE), color=(0, 0, 0))
@@ -113,6 +113,9 @@ def main():
     for a in LHS_FULL:
         for b in RHS_BOARD:
             create(a + b + "#", (a in LHS_BONUS))
+    
+    for f in os.listdir(replaces_dir):
+        shutil.copy(os.path.join(replaces_dir, f), output_dir)
 
 if __name__ == "__main__":
     main()

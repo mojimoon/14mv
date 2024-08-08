@@ -1,4 +1,4 @@
-# 14 Minesweeper Variants 2 Full Tier List
+# 14 Minesweeper Variants 2 Full Tier List (Deprecated)
 
 [Tiermaker](https://tiermaker.com/create/14-minesweeper-variants-2-full-combination-andattachment-17377235-5)
 
