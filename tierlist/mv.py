@@ -3,10 +3,10 @@ import os
 import shutil
 
 LHS = ["Q", "C", "T", "O", "D", "S", "B"]
-LHS_BONUS = ["D'", "A", "H", "E"]
+LHS_BONUS = ["D'", "A", "H", "T'"]
 LHS_FULL = LHS + LHS_BONUS
 RHS = ["M", "L", "W", "N", "X", "P", "E"]
-RHS_BONUS = ["X'", "K", "W'", "E"]
+RHS_BONUS = ["X'", "K", "W'", "E'"]
 RHS_FULL = RHS + RHS_BONUS
 COMBO_ALT = [
     "CD", "CQ", "CT", "OQ", "OT", "QT",

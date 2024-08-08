@@ -1,6 +1,6 @@
 # 14 Minesweeper Variants Full Tier List
 
-[Tiermaker](https://tiermaker.com/create/14-minesweeper-variants-full-including-combination-17377235)
+[Tiermaker](https://tiermaker.com/create/14-minesweeper-variants-full-including-combination-17377235-2)
 
 A complete tier list for 14 Minesweeper Variants (14MV), including all Combinations (+, +').
 
