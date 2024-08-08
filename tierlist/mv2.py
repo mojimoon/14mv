@@ -7,12 +7,11 @@ LHS_FULL = ["H", "C", "S", "G", "F", "B", "T", "Z", "G'"]
 RHS = ["X", "D", "P", "E", "M", "A", "L"]
 RHS_BONUS = ["X'", "I"]
 RHS_FULL = ["X", "D", "P", "E", "M", "A", "L", "X'", "I"]
-ATTACH = ["EX", "ED", "EA", "LX", "LD", "LM", "LP"]
 ATTACH_ORD = ["EX", "LD", "LM", "EA", "LX", "ED", "LP"]
-ATTACH_ALT = ["EM", "EP", "LA"]
 ATTACH_BONUS = ["E'", "E^", "L'"]
 COMBO_ALT = ["GH", "CH", "CG", "FG", "FH", "CF", "BH", "GR"]
-TAG = ["E", "L"]
+RHS_CLUE = ["X", "D", "P", "M", "A"]
+RHS_BOARD = ["E", "L"]
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
@@ -92,12 +91,11 @@ def main():
         create(ab, 1)
     
     create("&", 2)
-    for bc in ATTACH:
-        create(bc)
+    for b in RHS_BOARD:
+        for c in RHS_CLUE:
+            create(b + c, ((b + c) not in ATTACH_ORD))
     
     create("&'", 2)
-    for bc in ATTACH_ALT:
-        create(bc, 1)
     for b in ATTACH_BONUS:
         create(b, 1)
     create("EL", 1)
@@ -108,12 +106,12 @@ def main():
             create(a + bc, (a in LHS_BONUS))
     
     create("#", 2)
-    for b in TAG:
+    for b in RHS_BOARD:
         create(b + "#")
     
     create("#+", 2)
     for a in LHS_FULL:
-        for b in TAG:
+        for b in RHS_BOARD:
             create(a + b + "#", (a in LHS_BONUS))
 
 if __name__ == "__main__":
