@@ -35,10 +35,11 @@ RHS_BOARD = ["E", "L"]
 TAGS = ["E-#", "L-#"]
 PAGES = ["F", "!", "+ʹ", "&ʹ", "¿", "5", "6", "7", "8", "!!", "+ʹ!", "&ʹ!", "¿¡", "5!", "6!", "7!", "8!"]
 
+ATTACH_ORDER = ['-'.join(a) for a in ATTACH]
 MAINPAGE = ["V", *LHS, *RHS]
 LHS_FULL = [*LHS, *LHS_BONUS]
 RHS_FULL = [*RHS, *RHS_BONUS]
-GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, *TAGS, *ATTACH]
+GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, *TAGS, *ATTACH_ORDER]
 GALLERY_ROWS = ['', *LHS, *LHS_BONUS]
 
 FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues', 'category']
@@ -200,7 +201,7 @@ def is_gray_row(row_name):
     return row_name in LHS_BONUS
 
 def is_gray_col(col_name):
-    return col_name in RHS_BONUS or col_name in ATTACH
+    return col_name in RHS_BONUS or col_name in ATTACH_ORDER
 
 def is_gray_cell(row_name, col_name):
     return is_gray_row(row_name) or is_gray_col(col_name)
@@ -457,9 +458,6 @@ def analyze(in_file, out_file):
                 row_desc(worksheet, x, 0)
 
                 for col, col_name in enumerate(GALLERY_COLUMNS):
-                    if isinstance(col_name, tuple):
-                        col_name = '-'.join(col_name)
-
                     if row == 0:
                         cell_name = col_name
                     elif col == 0:
