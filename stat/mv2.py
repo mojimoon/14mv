@@ -19,23 +19,49 @@ statistics of
 per level type
 '''
 
-fieldnames = ['level', 'type', 'dimension', 'difficulty', 'max_clues', 'total_clues', 'starting_clues', 'starting_clues_sub', 'final_clues']
+LHS = ["H", "C", "S", "G", "F", "B", "T"]
+LHS_BONUS = ["Z", "G'"]
+RHS = ["X", "D", "P", "E", "M", "A", "L"]
+RHS_BONUS = ["X'", "I"]
+MAINPAGE = ["V", *LHS, *RHS]
+# ATTACH = ["EX", "LD", "LM", "EA", "LX", "ED", "LP"]
+ATTACH = [("E", "X"), ("L", "D"), ("L", "M"), ("E", "A"), ("L", "X"), ("E", "D"), ("L", "P")]
+ATTACH_BONUS = ["E'", "E^", "L'"]
+# COMBO_ALT = ["GH", "CH", "CG", "FG", "FH", "CF", "BH", "GR"]
+COMBO_ALT = [("G", "H"), ("C", "H"), ("C", "G"), ("F", "G"), ("F", "H"), ("C", "F"), ("B", "H"), ("G", "R")]
+RHS_CLUE = ["X", "D", "P", "M", "A"]
+RHS_BOARD = ["E", "L"]
 
-# def write_to_csv(outputfile, data):
-#     file_exists = os.path.isfile(outputfile)
-#     with open(outputfile, 'a', newline='') as csvfile:
-#         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-#         if not file_exists:
-#             writer.writeheader()
-#         writer.writerow(data)
+fieldnames = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues']
 
 def get_type(level_type):
-    # all capital letters
-    return ''.join([c for c in level_type if c.isupper()])
+    '''
+    [2B][2X'][@c] -> ("B", "X'")
+    [V] -> ("V",)
+    [2E][2#] -> ("E", "#")
+    [2G][R+] -> ("G", "R+")
+    '''
+    pattern = re.compile(r'\[\d?([A-Za-z^\'#]+)\+?\]')
+    matches = pattern.findall(level_type)
+    return tuple(matches)
 
 def get_difficulty(level_type):
     # number of !
     return level_type.count('!')
+
+def is_starting_clue(clue):
+    # contains capital letters and numbers
+    return any([c.isupper() for c in clue]) and any([c.isdigit() for c in clue])
+
+def is_number_clue(clue):
+    # contains numbers
+    return any([c.isdigit() for c in clue])
+
+def is_starting_question(clue):
+    return clue == 'Q'
+
+def is_starting_sub_question(clue):
+    return clue == 'Qprior'
 
 def read_file(file_path):
     # remove, create, write header
@@ -58,6 +84,8 @@ def read_file(file_path):
                 parts = line.split('\t')
 
                 level_id = parts[0]
+                # [2A]!!5x5-10-(V;5x1,2x1,1x5)-6457 -> [2A]!!5x5-10-6457
+                ingame_id = re.sub(r'\(.*\)-', '', level_id)
                 level_type = level_id.split('-')[0]
                 r = re.search(r'(\d+)x(\d+)', level_type)
                 row = int(r.group(1))
@@ -70,38 +98,35 @@ def read_file(file_path):
                 clue_pairs = [(int(clue[0]), int(clue[1])) for clue in clues]
                 clue_pairs.sort(key=lambda x: -x[0])
                 max_clues = clue_pairs[0][0]
-                total_clues = sum([(clue[0] - 1) * clue[1] for clue in clue_pairs])
+                workload = sum([(clue[0] - 1) * clue[1] for clue in clue_pairs])
 
                 grids = parts[1].strip().split(' ')
-                # the grids is row x col, the main board is row x row
-                # i.e. grids[0:row], [col:col+row], [2*col:2*col+row], ..
-
                 if col > row:
+                    # the grids is row x col, the main board is row x row
+                    # i.e. grids[0:row], [col:col+row], [2*col:2*col+row], ..
                     main_board = [grids[i*col:i*col+row] for i in range(row)]
                     mb = [grid for row in main_board for grid in row]
                     sub_board = [grids[i*col+row:(i+1)*col] for i in range(row)]
                     sb = [grid for row in sub_board for grid in row]
+                    starting_questions = len([clue for clue in sb if is_starting_sub_question(clue)])
                 else:
                     mb = grids
-
-                # a grid containing capital letter is a starting clue
-                starting_clues = [grid for grid in mb if any([c.isupper() for c in grid])]
-                # a grid containing number is a final clue (flags and questions are not counted)
-                final_clues = [grid for grid in mb if any([c.isdigit() for c in grid])]
-
-                if col > row:
-                    starting_sub_clues = [grid for grid in sb if grid.isupper()]
+                    starting_questions = 0
+                
+                starting_clues = len([clue for clue in mb if is_starting_clue(clue)])
+                starting_questions = starting_questions + len([clue for clue in mb if is_starting_question(clue)])
+                number_clues = len([clue for clue in mb if is_number_clue(clue)])
                 
                 writer.writerow({
-                    'level': level_id,
-                    'type': get_type(level_type),
+                    'id': ingame_id,
+                    'type': '-'.join(get_type(level_type)),
                     'dimension': row,
                     'difficulty': get_difficulty(level_type),
                     'max_clues': max_clues,
-                    'total_clues': total_clues,
-                    'starting_clues': len(starting_clues),
-                    'starting_clues_sub': len(starting_sub_clues) if col > row else 0,
-                    'final_clues': len(final_clues)
+                    'workload': workload,
+                    'starting_clues': starting_clues,
+                    'starting_questions': starting_questions,
+                    'number_clues': number_clues
                 })
 
 read_file(in_file)
