@@ -352,6 +352,8 @@ def analyze(in_file, out_file):
                 x += 6
 
         elif page.startswith('¿'):
+            if page.endswith('¡'):
+                diff = 1
             worksheet = workbook.add_worksheet(page)
             x, y = 1, 1
             worksheet.set_column(0, 0, 14)
@@ -368,9 +370,83 @@ def analyze(in_file, out_file):
                         worksheet.write(x+1+key_id, y, stat, number_format)
 
                     y += 1
+                y = 1
                 x += 6
+            
+        elif page.startswith('&'):
+            worksheet = workbook.add_worksheet(page)
+            x, y = 1, 1
+            worksheet.set_column(0, 0, 14)
 
-        '''
+            for row, a in enumerate(RHS_CLUE):
+                row_desc(worksheet, x, 0)
+
+                for b in RHS_BOARD:
+                    for col, dim in enumerate([5, 6, 7, 8]):
+                        worksheet.write(x, y, display_type_tuple((b, a), diff, dim), text_format)
+
+                        for key_id, key in enumerate(KEYS):
+                            filters = {'type': '-'.join((b, a)), 'difficulty': diff, 'dimension': dim}
+                            stat = get(df, filters, key)
+                            worksheet.write(x+1+key_id, y, stat, number_format)
+
+                        y += 1
+                    y += 1 # empty column
+                x += 6
+                y = 1
+            
+            x += 1 # empty row
+
+            row_desc(worksheet, x, 0)
+            y = 1
+            for col, dim in enumerate([5, 6, 7, 8]):
+                worksheet.write(x, y, display_type("E'", diff, dim), text_format)
+
+                for key_id, key in enumerate(KEYS):
+                    filters = {'type': "E'", 'difficulty': diff, 'dimension': dim}
+                    stat = get(df, filters, key)
+                    worksheet.write(x+1+key_id, y, stat, number_format)
+
+                y += 1
+            y = 6
+            for col, dim in enumerate([5, 6, 7, 8]):
+                worksheet.write(x, y, display_type("L'", diff, dim), text_format)
+
+                for key_id, key in enumerate(KEYS):
+                    filters = {'type': "L'", 'difficulty': diff, 'dimension': dim}
+                    stat = get(df, filters, key)
+                    worksheet.write(x+1+key_id, y, stat, number_format)
+
+                y += 1
+            x += 6
+
+            row_desc(worksheet, x, 0)
+            y = 1
+            for col, dim in enumerate([5, 6, 7, 8]):
+                worksheet.write(x, y, display_type("E^", diff, dim), text_format)
+
+                for key_id, key in enumerate(KEYS):
+                    filters = {'type': "E^", 'difficulty': diff, 'dimension': dim}
+                    stat = get(df, filters, key)
+                    worksheet.write(x+1+key_id, y, stat, number_format)
+
+                y += 1
+            
+            x += 6
+            x += 1 # empty row
+
+            row_desc(worksheet, x, 0)
+            y = 1
+            for col, dim in enumerate([5, 6, 7, 8]):
+                worksheet.write(x, y, display_type_tuple(("E", "L"), diff, dim), text_format)
+
+                for key_id, key in enumerate(KEYS):
+                    filters = {'type': "E-L", 'difficulty': diff, 'dimension': dim}
+                    stat = get(df, filters, key)
+                    worksheet.write(x+1+key_id, y, stat, number_format)
+                
+                y += 1
+
         elif page[0].isdigit():
             worksheet = workbook.add_worksheet(page)
             dim = int(page[0])
@@ -381,6 +457,9 @@ def analyze(in_file, out_file):
                 row_desc(worksheet, x, 0)
 
                 for col, col_name in enumerate(GALLERY_COLUMNS):
+                    if isinstance(col_name, tuple):
+                        col_name = '-'.join(col_name)
+
                     if row == 0:
                         cell_name = col_name
                     elif col == 0:
@@ -402,7 +481,6 @@ def analyze(in_file, out_file):
                 
                 x += 6
                 y = 1
-        '''
     
     workbook.close()
 
