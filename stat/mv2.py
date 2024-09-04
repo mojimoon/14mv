@@ -5,9 +5,11 @@ import numpy as np
 import os
 import xlsxwriter
 
-in_file = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
+src = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
 
-out_file = "stats.csv"
+csv = "stats.csv"
+
+xlsx = "stats.xlsx"
 
 '''
 statistics of 
@@ -25,14 +27,18 @@ RHS = ["X", "D", "P", "E", "M", "A", "L"]
 RHS_BONUS = ["X'", "I"]
 MAINPAGE = ["V", *LHS, *RHS]
 # ATTACH = ["EX", "LD", "LM", "EA", "LX", "ED", "LP"]
-ATTACH = [("E", "X"), ("L", "D"), ("L", "M"), ("E", "A"), ("L", "X"), ("E", "D"), ("L", "P")]
+ATTACH = ["E-X", "L-D", "L-M", "E-A", "L-X", "E-D", "L-P"]
 ATTACH_BONUS = ["E'", "E^", "L'"]
 # COMBO_ALT = ["GH", "CH", "CG", "FG", "FH", "CF", "BH", "GR"]
-COMBO_ALT = [("G", "H"), ("C", "H"), ("C", "G"), ("F", "G"), ("F", "H"), ("C", "F"), ("B", "H"), ("G", "R")]
+COMBO_ALT = ["G-H", "C-H", "C-G", "F-G", "F-H", "C-F", "B-H", "G-R"]
 RHS_CLUE = ["X", "D", "P", "M", "A"]
 RHS_BOARD = ["E", "L"]
+PAGES = ["F", "!", "+'", "&'", "?", "5", "6", "7", "8", "!!", "+'!", "&'!", "?!", "5!", "6!", "7!", "8!"]
+GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, "E-#", "L-#", *ATTACH]
+GALLERY_ROWS = ['', *LHS, *LHS_BONUS]
 
-fieldnames = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues']
+FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues']
+KEYS = FIELDS[4:]
 
 def get_type(level_type):
     '''
@@ -63,16 +69,16 @@ def is_starting_question(clue):
 def is_starting_sub_question(clue):
     return clue == 'Qprior'
 
-def read_file(file_path):
+def read_file(in_file, out_file):
     # remove, create, write header
     if os.path.exists(out_file):
         os.remove(out_file)
     
     with open(out_file, 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer = csv.DictWriter(csvfile, fieldnames=FIELDS)
         writer.writeheader()
 
-        with open(file_path, 'r') as f:
+        with open(in_file, 'r') as f:
             lines = f.readlines()[1:]
             '''
             [2A]!!5x5-10-(V;5x1,2x1,1x5)-6457	q 2a2 f f q 2a2 2A0 2a2 2a8 f f 2a2 2a0 q f f q q f f q q 2A6 f f
@@ -129,16 +135,100 @@ def read_file(file_path):
                     'number_clues': number_clues
                 })
 
-read_file(in_file)
-
 def get_mean(df, filters, key):
     for k, v in filters.items():
         df = df[df[k] == v]
     return df[key].mean()
 
-def analyze(outputfile):
-    workbook = xlsxwriter.Workbook(outputfile)
-    merged_style = workbook.add_format({
+def display_type(csv_type, diff, dim=None):
+    return ''.join([
+        *csv_type.split('-'),
+        '!' * diff,
+        str(dim) if dim else ''
+    ])
+
+def is_gray_row(row_name):
+    return row_name in LHS_BONUS
+
+def is_gray_col(col_name):
+    return col_name in RHS_BONUS or col_name in ATTACH
+
+def is_gray_cell(row_name, col_name):
+    return is_gray_row(row_name) or is_gray_col(col_name)
+
+def analyze(in_file, out_file):
+    df = pd.read_csv(in_file)
+    workbook = xlsxwriter.Workbook(out_file)
+    center_format = workbook.add_format({
+        'align': 'center',
+        'valign': 'vcenter'
+    })
+    text_format = workbook.add_format({
+        'border': 1,
+        'align': 'center',
+        'valign': 'vcenter'
+    })
+    gray_text_format = workbook.add_format({
+        'border': 1,
         'align': 'center',
         'valign': 'vcenter',
+        'color': '#666666'
     })
+    number_format = workbook.add_format({
+        'align': 'center',
+        'valign': 'vcenter',
+        'num_format': '0.000'
+    })
+    gray_number_format = workbook.add_format({
+        'align': 'center',
+        'valign': 'vcenter',
+        'num_format': '0.000',
+        'color': '#666666'
+    })
+
+    def row_desc(worksheet, x, y):
+        worksheet.write(x+1, y, 'Max Clues', center_format)
+        worksheet.write(x+2, y, 'Workload', center_format)
+        worksheet.write(x+3, y, 'Starting Clues', center_format)
+        worksheet.write(x+4, y, 'Starting ?s', center_format)
+        worksheet.write(x+5, y, 'Number Clues', center_format)
+
+    for page_id, page in enumerate(PAGES):
+        diff = page.count('!')
+        if page[0].isdigit():
+            worksheet = workbook.add_worksheet(page)
+            dim = int(page[0])
+            x, y = 1, 1
+            
+            worksheet.set_column(0, 0, 14)
+
+            for row, row_name in enumerate(GALLERY_ROWS):
+                row_desc(worksheet, x, 0)
+
+                for col, col_name in enumerate(GALLERY_COLUMNS):
+                    cell_name = '-'.join([row_name, col_name]) if (row > 0 and col > 0) else col_name
+
+                    worksheet.write(x, y, display_type(cell_name, diff, dim), gray_text_format if is_gray_cell(row_name, col_name) else text_format)
+
+                    for key_id, key in enumerate(KEYS):
+                        filters = {'type': cell_name, 'difficulty': diff, 'dimension': dim}
+                        mean = get_mean(df, filters, key)
+                        # print(f'{cell_name} {display_type(cell_name, diff, dim)} {key} {mean}')
+                        worksheet.write(x+1+key_id, y, mean, gray_number_format if is_gray_cell(row_name, col_name) else number_format)
+
+                    y += 1
+
+                    if col_name == "I":
+                        y += 1
+                
+                x += 6
+                y = 1
+    
+    workbook.close()
+
+def main():
+    # read_file(src, csv)
+    analyze(csv, xlsx)
+
+if __name__ == "__main__":
+    main()
