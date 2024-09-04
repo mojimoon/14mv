@@ -5,11 +5,11 @@ import numpy as np
 import os
 import xlsxwriter
 
-src = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
+in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
 
-csv = "stats.csv"
+out1 = "stats.csv"
 
-xlsx = "stats.xlsx"
+out2 = "stats.xlsx"
 
 '''
 statistics of 
@@ -23,21 +23,25 @@ per level type
 
 LHS = ["H", "C", "S", "G", "F", "B", "T"]
 LHS_BONUS = ["Z", "G'"]
+LHS_FULL = [*LHS, *LHS_BONUS]
 RHS = ["X", "D", "P", "E", "M", "A", "L"]
 RHS_BONUS = ["X'", "I"]
+RHS_FULL = [*RHS, *RHS_BONUS]
 MAINPAGE = ["V", *LHS, *RHS]
 # ATTACH = ["EX", "LD", "LM", "EA", "LX", "ED", "LP"]
-ATTACH = ["E-X", "L-D", "L-M", "E-A", "L-X", "E-D", "L-P"]
+ATTACH = [("E", "X"), ("L", "D"), ("L", "M"), ("E", "A"), ("L", "X"), ("E", "D"), ("L", "P")]
 ATTACH_BONUS = ["E'", "E^", "L'"]
 # COMBO_ALT = ["GH", "CH", "CG", "FG", "FH", "CF", "BH", "GR"]
-COMBO_ALT = ["G-H", "C-H", "C-G", "F-G", "F-H", "C-F", "B-H", "G-R"]
+COMBO_ALT = [("G", "H"), ("C", "H"), ("C", "G"), ("F", "G"), ("F", "H"), ("C", "F"), ("B", "H"), ("G", "R")]
 RHS_CLUE = ["X", "D", "P", "M", "A"]
 RHS_BOARD = ["E", "L"]
+COMBO = ['-'.join([l, r]) for l in LHS for r in RHS]
+TAGS = ["E-#", "L-#"]
 PAGES = ["F", "!", "+'", "&'", "?", "5", "6", "7", "8", "!!", "+'!", "&'!", "?!", "5!", "6!", "7!", "8!"]
-GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, "E-#", "L-#", *ATTACH]
+GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, *TAGS, *ATTACH]
 GALLERY_ROWS = ['', *LHS, *LHS_BONUS]
 
-FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues']
+FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues', 'category']
 KEYS = FIELDS[4:]
 
 def get_type(level_type):
@@ -68,6 +72,41 @@ def is_starting_question(clue):
 
 def is_starting_sub_question(clue):
     return clue == 'Qprior'
+
+def get_category(types):
+    if len(types) == 1:
+        if types[0] in MAINPAGE:
+            return 'F' # main
+        if types[0] in LHS_BONUS or types[0] in RHS_BONUS:
+            return '?' # bonus
+        if types[0] in ATTACH_BONUS:
+            return '&\'' # attach bonus
+        return '?1'
+    if len(types) == 2:
+        if types[0] in LHS_FULL and types[1] in RHS_FULL:
+            if types[0] in LHS and types[1] in RHS:
+                return '+' # combo
+            return '+?' # combo (bonus)
+        if types[0] in RHS_BOARD and types[1] in RHS_CLUE:
+            if types in ATTACH:
+                return '&' # attach
+            return '&?' # attach (bonus)
+        if types[0] in RHS_BOARD and types[1] == '#':
+            return '#' # tag
+        if types in COMBO_ALT:
+            return '+\'' # combo alt
+        return '&\'' # attach bonus
+    if types[0] in LHS:
+        if types[2] == '#':
+            return '#+' # tag combo
+        elif types[2] in RHS:
+            return '&+' # attach combo
+    elif types[0] in LHS_BONUS:
+        if types[2] == '#':
+            return '#+?' # tag combo (bonus)
+        elif types[2] in RHS:
+            return '&+?' # attach combo (bonus)
+    return '?3'
 
 def read_file(in_file, out_file):
     # remove, create, write header
@@ -122,22 +161,32 @@ def read_file(in_file, out_file):
                 starting_clues = len([clue for clue in mb if is_starting_clue(clue)])
                 starting_questions = starting_questions + len([clue for clue in mb if is_starting_question(clue)])
                 number_clues = len([clue for clue in mb if is_number_clue(clue)])
+
+                type_tuples = get_type(level_type)
                 
                 writer.writerow({
                     'id': ingame_id,
-                    'type': '-'.join(get_type(level_type)),
+                    'type': '-'.join(type_tuples),
                     'dimension': row,
                     'difficulty': get_difficulty(level_type),
                     'max_clues': max_clues,
                     'workload': workload,
                     'starting_clues': starting_clues,
                     'starting_questions': starting_questions,
-                    'number_clues': number_clues
+                    'number_clues': number_clues,
+                    'category': get_category(type_tuples)
                 })
 
 def get_mean(df, filters, key):
     for k, v in filters.items():
         df = df[df[k] == v]
+    return df[key].mean()
+
+def get_mean(df, filters, multifilters, key):
+    for k, v in filters.items():
+        df = df[df[k] == v]
+    for k, v in multifilters.items():
+        df = df[df[k].isin(v)]
     return df[key].mean()
 
 def display_type(csv_type, diff, dim=None):
@@ -195,25 +244,83 @@ def analyze(in_file, out_file):
 
     for page_id, page in enumerate(PAGES):
         diff = page.count('!')
+
+        if page_id < 3:
+            worksheet = workbook.add_worksheet(page)
+            x, y = 1, 1
+            worksheet.set_column(0, 0, 14)
+
+            row_desc(worksheet, x, 0)
+
+            y = 5
+            for dim in [5, 6, 7, 8]:
+                worksheet.write(x, y, display_type("V", diff, dim), text_format)
+                for key_id, key in enumerate(KEYS):
+                    filters = {'type': 'V', 'difficulty': diff, 'dimension': dim}
+                    mean = get_mean(df, filters, key)
+                    worksheet.write(x+1+key_id, y, mean, number_format)
+                y += 1
+            x += 6
+            x += 1 # empty row
+
+            for row, l, r in zip(range(1, 8), LHS, RHS):
+                row_desc(worksheet, x, 0)
+                y = 1
+                for dim in [5, 6, 7, 8]:
+                    worksheet.write(x, y, display_type(l, diff, dim), text_format)
+                    for key_id, key in enumerate(KEYS):
+                        filters = {'type': l, 'difficulty': diff, 'dimension': dim}
+                        mean = get_mean(df, filters, key)
+                        worksheet.write(x+1+key_id, y, mean, number_format)
+                    y += 1
+                y = 6
+                for dim in [5, 6, 7, 8]:
+                    worksheet.write(x, y, display_type(r, diff, dim), text_format)
+                    for key_id, key in enumerate(KEYS):
+                        filters = {'type': r, 'difficulty': diff, 'dimension': dim}
+                        mean = get_mean(df, filters, key)
+                        worksheet.write(x+1+key_id, y, mean, number_format)
+                    y += 1
+                x += 6
+            x += 1 # empty row
+
+            if diff == 2:
+                # "#" only
+                row_desc(worksheet, x, 0)
+                y = 6
+                for dim in [5, 6, 7, 8]:
+                    worksheet.write(x, y, display_type("#", diff, dim), text_format)
+                    for key_id, key in enumerate(KEYS):
+                        filters = {'difficulty': diff, 'dimension': dim}
+                        multifilters = {'type': TAGS}
+                        mean = get_mean(df, filters, multifilters, key)
+                        worksheet.write(x+1+key_id, y, mean, number_format)
+                    y += 1
+                continue
+
+        '''
         if page[0].isdigit():
             worksheet = workbook.add_worksheet(page)
             dim = int(page[0])
             x, y = 1, 1
-            
             worksheet.set_column(0, 0, 14)
 
             for row, row_name in enumerate(GALLERY_ROWS):
                 row_desc(worksheet, x, 0)
 
                 for col, col_name in enumerate(GALLERY_COLUMNS):
-                    cell_name = '-'.join([row_name, col_name]) if (row > 0 and col > 0) else col_name
+                    if row == 0:
+                        cell_name = col_name
+                    elif col == 0:
+                        cell_name = row_name
+                    else:
+                        cell_name = '-'.join([row_name, col_name])
 
                     worksheet.write(x, y, display_type(cell_name, diff, dim), gray_text_format if is_gray_cell(row_name, col_name) else text_format)
 
                     for key_id, key in enumerate(KEYS):
                         filters = {'type': cell_name, 'difficulty': diff, 'dimension': dim}
                         mean = get_mean(df, filters, key)
-                        # print(f'{cell_name} {display_type(cell_name, diff, dim)} {key} {mean}')
                         worksheet.write(x+1+key_id, y, mean, gray_number_format if is_gray_cell(row_name, col_name) else number_format)
 
                     y += 1
@@ -223,12 +330,12 @@ def analyze(in_file, out_file):
                 
                 x += 6
                 y = 1
+        '''
     
     workbook.close()
 
 def main():
-    # read_file(src, csv)
-    analyze(csv, xlsx)
+    read_file(in1, out1)
 
 if __name__ == "__main__":
     main()
