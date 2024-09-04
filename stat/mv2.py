@@ -9,7 +9,7 @@ in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\
 
 out1 = "stats.csv"
 
-out2 = "stats.xlsx"
+out2 = "stats_mean.xlsx"
 
 '''
 statistics of 
@@ -23,11 +23,8 @@ per level type
 
 LHS = ["H", "C", "S", "G", "F", "B", "T"]
 LHS_BONUS = ["Z", "G'"]
-LHS_FULL = [*LHS, *LHS_BONUS]
 RHS = ["X", "D", "P", "E", "M", "A", "L"]
 RHS_BONUS = ["X'", "I"]
-RHS_FULL = [*RHS, *RHS_BONUS]
-MAINPAGE = ["V", *LHS, *RHS]
 # ATTACH = ["EX", "LD", "LM", "EA", "LX", "ED", "LP"]
 ATTACH = [("E", "X"), ("L", "D"), ("L", "M"), ("E", "A"), ("L", "X"), ("E", "D"), ("L", "P")]
 ATTACH_BONUS = ["E'", "E^", "L'"]
@@ -35,14 +32,17 @@ ATTACH_BONUS = ["E'", "E^", "L'"]
 COMBO_ALT = [("G", "H"), ("C", "H"), ("C", "G"), ("F", "G"), ("F", "H"), ("C", "F"), ("B", "H"), ("G", "R")]
 RHS_CLUE = ["X", "D", "P", "M", "A"]
 RHS_BOARD = ["E", "L"]
-COMBO = ['-'.join([l, r]) for l in LHS for r in RHS]
 TAGS = ["E-#", "L-#"]
-PAGES = ["F", "!", "+'", "&'", "?", "5", "6", "7", "8", "!!", "+'!", "&'!", "?!", "5!", "6!", "7!", "8!"]
+PAGES = ["F", "!", "+ʹ", "&ʹ", "¿", "5", "6", "7", "8", "!!", "+ʹ!", "&ʹ!", "¿¡", "5!", "6!", "7!", "8!"]
+
+MAINPAGE = ["V", *LHS, *RHS]
+LHS_FULL = [*LHS, *LHS_BONUS]
+RHS_FULL = [*RHS, *RHS_BONUS]
 GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, *TAGS, *ATTACH]
 GALLERY_ROWS = ['', *LHS, *LHS_BONUS]
 
 FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues', 'category']
-KEYS = FIELDS[4:]
+KEYS = FIELDS[4:9]
 
 def get_type(level_type):
     '''
@@ -177,23 +177,23 @@ def read_file(in_file, out_file):
                     'category': get_category(type_tuples)
                 })
 
-def get_mean(df, filters, key):
+def get(df, filters, key):
     for k, v in filters.items():
         df = df[df[k] == v]
     return df[key].mean()
 
-def get_mean(df, filters, multifilters, key):
-    for k, v in filters.items():
-        df = df[df[k] == v]
-    for k, v in multifilters.items():
-        df = df[df[k].isin(v)]
-    return df[key].mean()
-
-def display_type(csv_type, diff, dim=None):
+def display_type(csv_type, diff, dim):
     return ''.join([
         *csv_type.split('-'),
         '!' * diff,
-        str(dim) if dim else ''
+        str(dim)
+    ])
+
+def display_type_tuple(tuple_type, diff, dim):
+    return ''.join([
+        *tuple_type,
+        '!' * diff,
+        str(dim)
     ])
 
 def is_gray_row(row_name):
@@ -210,29 +210,34 @@ def analyze(in_file, out_file):
     workbook = xlsxwriter.Workbook(out_file)
     center_format = workbook.add_format({
         'align': 'center',
-        'valign': 'vcenter'
+        'valign': 'vcenter',
+        'font_name': 'Arial'
     })
     text_format = workbook.add_format({
         'border': 1,
         'align': 'center',
-        'valign': 'vcenter'
+        'valign': 'vcenter',
+        'font_name': 'Arial'
     })
     gray_text_format = workbook.add_format({
         'border': 1,
         'align': 'center',
         'valign': 'vcenter',
-        'color': '#666666'
+        'color': '#666666',
+        'font_name': 'Arial'
     })
     number_format = workbook.add_format({
         'align': 'center',
         'valign': 'vcenter',
-        'num_format': '0.000'
+        'num_format': '0.000',
+        'font_name': 'Arial'
     })
     gray_number_format = workbook.add_format({
         'align': 'center',
         'valign': 'vcenter',
         'num_format': '0.000',
-        'color': '#666666'
+        'color': '#666666',
+        'font_name': 'Arial'
     })
 
     def row_desc(worksheet, x, y):
@@ -245,61 +250,128 @@ def analyze(in_file, out_file):
     for page_id, page in enumerate(PAGES):
         diff = page.count('!')
 
-        if page_id < 3:
+        if page_id < 2 or page_id == 9:
             worksheet = workbook.add_worksheet(page)
             x, y = 1, 1
             worksheet.set_column(0, 0, 14)
 
             row_desc(worksheet, x, 0)
 
-            y = 5
+            y = 1
             for dim in [5, 6, 7, 8]:
                 worksheet.write(x, y, display_type("V", diff, dim), text_format)
                 for key_id, key in enumerate(KEYS):
                     filters = {'type': 'V', 'difficulty': diff, 'dimension': dim}
-                    mean = get_mean(df, filters, key)
-                    worksheet.write(x+1+key_id, y, mean, number_format)
+                    stat = get(df, filters, key)
+                    worksheet.write(x+1+key_id, y, stat, number_format)
                 y += 1
             x += 6
             x += 1 # empty row
 
-            for row, l, r in zip(range(1, 8), LHS, RHS):
+            for row, l, r in zip(range(len(LHS)), LHS, RHS):
                 row_desc(worksheet, x, 0)
                 y = 1
                 for dim in [5, 6, 7, 8]:
                     worksheet.write(x, y, display_type(l, diff, dim), text_format)
                     for key_id, key in enumerate(KEYS):
                         filters = {'type': l, 'difficulty': diff, 'dimension': dim}
-                        mean = get_mean(df, filters, key)
-                        worksheet.write(x+1+key_id, y, mean, number_format)
+                        stat = get(df, filters, key)
+                        worksheet.write(x+1+key_id, y, stat, number_format)
                     y += 1
                 y = 6
                 for dim in [5, 6, 7, 8]:
                     worksheet.write(x, y, display_type(r, diff, dim), text_format)
                     for key_id, key in enumerate(KEYS):
                         filters = {'type': r, 'difficulty': diff, 'dimension': dim}
-                        mean = get_mean(df, filters, key)
-                        worksheet.write(x+1+key_id, y, mean, number_format)
+                        stat = get(df, filters, key)
+                        worksheet.write(x+1+key_id, y, stat, number_format)
                     y += 1
                 x += 6
             x += 1 # empty row
 
             if diff == 2:
-                # "#" only
+                # row_desc(worksheet, x, 0)
+                # y = 6
+                # for dim in [5, 6, 7, 8]:
+                #     worksheet.write(x, y, display_type("#", diff, dim), text_format)
+                #     for key_id, key in enumerate(KEYS):
+                #         filters = {'category': '#', 'difficulty': diff, 'dimension': dim}
+                #         stat = get(df, filters, key)
+                #         worksheet.write(x+1+key_id, y, stat, number_format)
+                #     y += 1
+                continue
+            
+            for row, l, r in zip(range(2), ("+", "&+"), ("&", "#")):
                 row_desc(worksheet, x, 0)
+                y = 1
+                for dim in [5, 6, 7, 8]:
+                    worksheet.write(x, y, display_type(l, diff, dim), text_format)
+                    for key_id, key in enumerate(KEYS):
+                        filters = {'category': l, 'difficulty': diff, 'dimension': dim}
+                        stat = get(df, filters, key)
+                        worksheet.write(x+1+key_id, y, stat, number_format)
+                    y += 1
                 y = 6
                 for dim in [5, 6, 7, 8]:
-                    worksheet.write(x, y, display_type("#", diff, dim), text_format)
+                    worksheet.write(x, y, display_type(r, diff, dim), text_format)
                     for key_id, key in enumerate(KEYS):
-                        filters = {'difficulty': diff, 'dimension': dim}
-                        multifilters = {'type': TAGS}
-                        mean = get_mean(df, filters, multifilters, key)
-                        worksheet.write(x+1+key_id, y, mean, number_format)
+                        filters = {'category': r, 'difficulty': diff, 'dimension': dim}
+                        stat = get(df, filters, key)
+                        worksheet.write(x+1+key_id, y, stat, number_format)
                     y += 1
-                continue
+                x += 6
+            
+            row_desc(worksheet, x, 0)
+            y = 1
+            for dim in [5, 6, 7, 8]:
+                worksheet.write(x, y, display_type("#+", diff, dim), text_format)
+                for key_id, key in enumerate(KEYS):
+                    filters = {'category': '#+', 'difficulty': diff, 'dimension': dim}
+                    stat = get(df, filters, key)
+                    worksheet.write(x+1+key_id, y, stat, number_format)
+                y += 1
+
+        elif page.startswith('+'):
+            worksheet = workbook.add_worksheet(page)
+            x, y = 1, 1
+            worksheet.set_column(0, 0, 14)
+
+            for row, cb in enumerate(COMBO_ALT):
+                row_desc(worksheet, x, 0)
+
+                for col, dim in enumerate([5, 6, 7, 8]):
+                    worksheet.write(x, y, display_type_tuple(cb, diff, dim), text_format)
+
+                    for key_id, key in enumerate(KEYS):
+                        filters = {'type': '-'.join(cb), 'difficulty': diff, 'dimension': dim}
+                        stat = get(df, filters, key)
+                        worksheet.write(x+1+key_id, y, stat, number_format)
+
+                    y += 1
+                y = 1
+                x += 6
+
+        elif page.startswith('¿'):
+            worksheet = workbook.add_worksheet(page)
+            x, y = 1, 1
+            worksheet.set_column(0, 0, 14)
+
+            for row, b in enumerate([*LHS_BONUS, *RHS_BONUS]):
+                row_desc(worksheet, x, 0)
+
+                for col, dim in enumerate([5, 6, 7, 8]):
+                    worksheet.write(x, y, display_type(b, diff, dim), text_format)
+
+                    for key_id, key in enumerate(KEYS):
+                        filters = {'type': b, 'difficulty': diff, 'dimension': dim}
+                        stat = get(df, filters, key)
+                        worksheet.write(x+1+key_id, y, stat, number_format)
+
+                    y += 1
+                x += 6
 
         '''
-        if page[0].isdigit():
+        elif page[0].isdigit():
             worksheet = workbook.add_worksheet(page)
             dim = int(page[0])
             x, y = 1, 1
@@ -320,8 +392,8 @@ def analyze(in_file, out_file):
 
                     for key_id, key in enumerate(KEYS):
                         filters = {'type': cell_name, 'difficulty': diff, 'dimension': dim}
-                        mean = get_mean(df, filters, key)
-                        worksheet.write(x+1+key_id, y, mean, gray_number_format if is_gray_cell(row_name, col_name) else number_format)
+                        stat = get(df, filters, key)
+                        worksheet.write(x+1+key_id, y, stat, gray_number_format if is_gray_cell(row_name, col_name) else number_format)
 
                     y += 1
 
@@ -335,7 +407,8 @@ def analyze(in_file, out_file):
     workbook.close()
 
 def main():
-    read_file(in1, out1)
+    # read_file(in1, out1)
+    analyze(out1, out2)
 
 if __name__ == "__main__":
     main()
