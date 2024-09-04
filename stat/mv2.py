@@ -7,11 +7,11 @@ import xlsxwriter
 
 in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
 
-out1 = "mv2/stats.csv"
+out1 = "mv2/mv2_stats.csv"
 
-out2 = "mv2/stats_mean.xlsx"
+out2 = "mv2/mv2_stats_mean.xlsx"
 
-out3 = "mv2/stats_workload.xlsx"
+out3 = "mv2/mv2_stats_workload.xlsx"
 
 '''
 statistics of 
@@ -46,6 +46,13 @@ GALLERY_ROWS = ['', *LHS, *LHS_BONUS]
 
 FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues', 'category']
 KEYS = FIELDS[4:9]
+KEY_DICT = {
+    'max_clues': 'Max Clues',
+    'workload': 'Workload',
+    'starting_clues': 'Starting Clues',
+    'starting_questions': 'Starting ?s',
+    'number_clues': 'Number Clues'
+}
 
 FONT = 'Aptos'
 
@@ -249,11 +256,13 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
 
     def row_desc(worksheet, x, y):
         if desc:
-            worksheet.write(x+1, y, 'Max Clues', center_format)
-            worksheet.write(x+2, y, 'Workload', center_format)
-            worksheet.write(x+3, y, 'Starting Clues', center_format)
-            worksheet.write(x+4, y, 'Starting ?s', center_format)
-            worksheet.write(x+5, y, 'Number Clues', center_format)
+            # worksheet.write(x+1, y, 'Max Clues', center_format)
+            # worksheet.write(x+2, y, 'Workload', center_format)
+            # worksheet.write(x+3, y, 'Starting Clues', center_format)
+            # worksheet.write(x+4, y, 'Starting ?s', center_format)
+            # worksheet.write(x+5, y, 'Number Clues', center_format)
+            for i, key in enumerate(keys):
+                worksheet.write(x+1+i, y, KEY_DICT[key], center_format)
     
     def create_worksheet(name):
         worksheet = workbook.add_worksheet(name)
@@ -492,7 +501,7 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
 
 def main():
     # read_file(in1, out1)
-    # analyze(out1, out2)
+    analyze(out1, out2)
     analyze(out1, out3, keys=['workload'], desc=False)
 
 if __name__ == "__main__":
