@@ -3,6 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 import os
+import xlsxwriter
 
 in_file = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
 
@@ -77,7 +78,7 @@ def read_file(file_path):
             # a grid containing capital letter is a starting clue
             starting_clues = [grid for grid in mb if any([c.isupper() for c in grid])]
             # a grid containing number is a final clue (flags and questions are not counted)
-            final_clues = [grid for grid in mb if grid.isdigit()]
+            final_clues = [grid for grid in mb if any([c.isdigit() for c in grid])]
 
             if col > row:
                 starting_sub_clues = [grid for grid in sb if grid.isupper()]
@@ -95,3 +96,15 @@ def read_file(file_path):
             })
 
 read_file(in_file)
+
+def get_mean(df, filters, key):
+    for k, v in filters.items():
+        df = df[df[k] == v]
+    return df[key].mean()
+
+def analyze(outputfile):
+    workbook = xlsxwriter.Workbook(outputfile)
+    merged_style = workbook.add_format({
+        'align': 'center',
+        'valign': 'vcenter',
+    })
