@@ -177,30 +177,30 @@ const clueTypes = {
       if (i-2 >= 0)   neighbors += m[i-2][j] * ((i + j - 2) % 2 !== 0 ? -1 : 1);
       return abs(neighbors);
     },
-    "MNX": (i, j, m=mines) => {
-      let neighbors = 0;
-      if (j-1 >= 0)   neighbors += m[i][j-1] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
-      if (j-2 >= 0)   neighbors += m[i][j-2] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
-      if (i+1 < cols) neighbors += m[i+1][j] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
-      if (i+2 < cols) neighbors += m[i+2][j] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
-      if (j+1 < rows) neighbors += m[i][j+1] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
-      if (j+2 < rows) neighbors += m[i][j+2] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
-      if (i-1 >= 0)   neighbors += m[i-1][j] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
-      if (i-2 >= 0)   neighbors += m[i-2][j] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
-      return abs(neighbors);
-    },
-    "MNXL": (i, j, m=mines) => {
-      let neighbors = 0;
-      if (j-1 >= 0)   neighbors += m[i][j-1] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
-      if (j-2 >= 0)   neighbors += m[i][j-2] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
-      if (i+1 < cols) neighbors += m[i+1][j] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
-      if (i+2 < cols) neighbors += m[i+2][j] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
-      if (j+1 < rows) neighbors += m[i][j+1] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
-      if (j+2 < rows) neighbors += m[i][j+2] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
-      if (i-1 >= 0)   neighbors += m[i-1][j] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
-      if (i-2 >= 0)   neighbors += m[i-2][j] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
-      return abs(neighbors + (lie[i][j] ? 1 : -1));
-    },
+    // "MNX": (i, j, m=mines) => {
+    //   let neighbors = 0;
+    //   if (j-1 >= 0)   neighbors += m[i][j-1] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
+    //   if (j-2 >= 0)   neighbors += m[i][j-2] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
+    //   if (i+1 < cols) neighbors += m[i+1][j] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
+    //   if (i+2 < cols) neighbors += m[i+2][j] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
+    //   if (j+1 < rows) neighbors += m[i][j+1] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
+    //   if (j+2 < rows) neighbors += m[i][j+2] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
+    //   if (i-1 >= 0)   neighbors += m[i-1][j] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
+    //   if (i-2 >= 0)   neighbors += m[i-2][j] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
+    //   return abs(neighbors);
+    // },
+    // "MNXL": (i, j, m=mines) => {
+    //   let neighbors = 0;
+    //   if (j-1 >= 0)   neighbors += m[i][j-1] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
+    //   if (j-2 >= 0)   neighbors += m[i][j-2] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
+    //   if (i+1 < cols) neighbors += m[i+1][j] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
+    //   if (i+2 < cols) neighbors += m[i+2][j] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
+    //   if (j+1 < rows) neighbors += m[i][j+1] * ((i + j + 1) % 2 !== 0 ? -1 : 2);
+    //   if (j+2 < rows) neighbors += m[i][j+2] * ((i + j + 2) % 2 !== 0 ? -1 : 2);
+    //   if (i-1 >= 0)   neighbors += m[i-1][j] * ((i + j - 1) % 2 !== 0 ? -1 : 2);
+    //   if (i-2 >= 0)   neighbors += m[i-2][j] * ((i + j - 2) % 2 !== 0 ? -1 : 2);
+    //   return abs(neighbors + (lie[i][j] ? 1 : -1));
+    // },
     "XW": (i, j, m=mines) => {
       let neighbors = [];
       if (j-1 >= 0) {
@@ -254,18 +254,9 @@ const clueTypes = {
       neighbors.sort((a, b) => a - b);
       return neighbors.join(" ");
     },
-    "B3": (i, j, m=mines) => {
-      return base3DigitSum(clueTypes.V(i, j, m));
-    },
-    "MB3": (i, j, m=mines) => {
-      return base3DigitSum(clueTypes.M(i, j, m));
-    },
     "#": (i, j, m=mines) => {
       const ct = clueType[i][j];
       return clueTypes[ct](i, j, m);
-    },
-    "MM": (i, j, m=mines) => {
-      return clueTypes.M(i, j, m) % 3;
     },
     "EV": (i, j, m=mines) => {
       let neighbors = 0;
@@ -278,35 +269,29 @@ const clueTypes = {
       }
       return neighbors;
     },
-    // "EE": (i, j, m=mines) => {
-    //   let posI = i;
-    //   let posJ = j;
-    //   let base = clueTypes.E(i, j, m);
-    //   let total = 0;
-    //   while (posJ >= 0 && !m[posI][posJ]) {
-    //     posJ--;
-    //     total += clueTypes.E(i, posJ, m);
-    //   }
-    //   posJ = j;
-    //   while (posI < cols -1 && !m[posI][posJ]) {
-    //     posI++;
-    //     total += clueTypes.E(posI, j, m);
-    //   }
-    //   posI = i;
-    //   while (posJ < rows && !m[posI][posJ]) {
-    //     posJ++;
-    //     total += clueTypes.E(i, posJ, m);
-    //   }
-    //   posJ = j;
-    //   while (posI > 0 && !m[posI][posJ]) {
-    //     posI--;
-    //     total += clueTypes.E(posI, j, m);
-    //   }
-    //   return total - 3 * base;
-    // }
+    "X2": (i, j, m=mines) => {
+      let n = [0, 0];
+      for (let ni = i-1; ni <= i+1; ni++) {
+        for (let nj = j-1; nj <= j+1; nj++) {
+          if (ni >= 0 && ni < cols && nj >= 0 && nj < rows) {
+            if (m[ni][nj]) {
+              n[(ni+nj) % 2]++;
+            }
+          }
+        }
+      }
+      n.sort((a, b) => a - b);
+      return n.join(" ");
+    },
+    "D2": (i, j, m=mines) => {
+      return clueTypes.V(i, j - 1, m);
+    },
+    "M2": (i, j, m=mines) => {
+      return clueTypes.V(i, j, m) % 3;
+    }
   }
   
-  const getNeighbors = clueTypes.WE;
+  const getNeighbors = clueTypes.V;
   
   // Normal minesweeper clues
   
