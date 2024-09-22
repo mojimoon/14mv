@@ -10,10 +10,12 @@ Grey cells are bonus variants.
 
 # 14 Minesweeper Variants 2 Full Tier List (Restyled)
 
-[Tiermaker](https://tiermaker.com/create/14-minesweeper-variants-2-full-combination-andattachment-17377235-7)
+[Tiermaker](https://tiermaker.com/create/14-minesweeper-variants-2-full-combination-andattachment-17377235-8)
 
 A complete tier list for 14 Minesweeper Variants 2 (14MV2), including all Combinations (+, +') and Attachments (&, &'). 
 
-To help you locate a specific variant, placeholder cells (?, +, +', &, &', &+, #, #+) are used to indicate the start of a new section.
+To help you locate a specific variant, placeholder cells (?, +, +', &, &', &+, #, #+, 2+1, 1+2) are used to indicate the start of a new section.
 
-Grey cells are bonus variants.
+Grey cells are bonus variants. 
+
+Soft orange cells indicate the start of a new gallery row.
