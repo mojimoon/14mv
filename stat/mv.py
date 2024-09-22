@@ -26,7 +26,7 @@ COMBO_ALT = [
     ("L", "M"), ("M", "X"), ("M", "N"), ("N", "X"), ("U", "W")
 ]
 TAG = ["#", "#'"]
-PAGES = ["F", "!", "+ʹ", "¿", "5", "6", "7", "8", "!!", "+ʹ!", "¿¡", "5!", "6!", "7!", "8!"]
+PAGES = ["F", "!", "+ʹ", "¿", "5", "6", "7", "8", "!!", "+ʹ!", "¿!", "5!", "6!", "7!", "8!"]
 
 MAIN = ["V", *LHS, *RHS]
 LHS_FULL = [*LHS, *LHS_BONUS]
@@ -212,6 +212,15 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
             worksheet.set_column(0, 0, 14)
         return worksheet
     
+    def cond_format(worksheet):
+        # white to green color scale
+        if not desc:
+            worksheet.conditional_format(1, 1, 100, 100, {
+                'type': '2_color_scale',
+                'min_color': "#FFFFFF",
+                'max_color': "#92D050"
+            })
+    
     for page_id, page in enumerate(PAGES):
         diff = page.count('!')
 
@@ -262,6 +271,8 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                         stat = get(df, filters, key)
                         worksheet.write(x+1+key_id, y, stat, number_format)
                     y += 1
+                
+                cond_format(worksheet)
                 continue
             
             row_desc(worksheet, x, 0)
@@ -292,6 +303,8 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     stat = get(df, filters, key)
                     worksheet.write(x+1+key_id, y, stat, number_format)
                 y += 1
+            
+            cond_format(worksheet)
 
         elif page.startswith('+'):
             worksheet = create_worksheet(page)
@@ -327,10 +340,12 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                         y += 1
                     y = 6
                     x += y_offset
+            
+            cond_format(worksheet)
     
         elif page.startswith('¿'):
-            if page.endswith('¡'):
-                diff = 1
+            # if page.endswith('¡'):
+            #     diff = 1
             worksheet = create_worksheet(page)
             x, y = 1, 1
 
@@ -362,6 +377,8 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     y += 1
                 y = 6
                 x += y_offset
+            
+            cond_format(worksheet)
         
         elif page[0].isdigit():
             worksheet = create_worksheet(page)
@@ -391,12 +408,14 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     y += 1
                 x += y_offset
                 y = 1
+            
+            cond_format(worksheet)
     
     workbook.close()
 
 def main():
     # read_file(in1, out1)
-    analyze(out1, out2, keys=['max_clues', 'workload', 'starting_clues', 'number_clues'])
+    # analyze(out1, out2, keys=['max_clues', 'workload', 'starting_clues', 'number_clues'])
     analyze(out1, out3, keys=['workload'], desc=False)
 
 if __name__ == "__main__":
