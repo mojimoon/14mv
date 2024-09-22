@@ -5,14 +5,11 @@ import numpy as np
 import os
 import xlsxwriter
 
-# in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
 in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\data_Minesweeper Variants 2\\puzzle\\all_puzzles_dedup.txt"
-# out1 = "mv2/mv2_stats.csv"
 out1 = "mv2/mv2_stats_update1.csv"
-# out2 = "mv2/mv2_stats_mean.xlsx"
 out2 = "mv2/mv2_stats_mean_update1.xlsx"
-# out3 = "mv2/mv2_stats_workload.xlsx"
 out3 = "mv2/mv2_stats_workload_update1.xlsx"
+stats1 = "mv/mv_stats.csv"
 
 '''
 statistics of 
@@ -250,6 +247,7 @@ def is_gray_cell(row_name, col_name):
 
 def analyze(in_file, out_file, keys=KEYS, desc=True):
     df = pd.read_csv(in_file)
+    df1 = pd.read_csv(stats1)
     workbook = xlsxwriter.Workbook(out_file)
     center_format = workbook.add_format({
         'align': 'center',
@@ -312,7 +310,6 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
 
     for page_id, page in enumerate(PAGES):
         diff = page.count('!')
-        
         
         if page_id < 2 or page == '!!':
             worksheet = create_worksheet(page)
@@ -541,6 +538,7 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
             cond_format(worksheet)
         
         elif page[0].isdigit() and len(page) > 1 and page[1] == '+':
+            # if page == '5+':
             worksheet = create_worksheet(page)
             dim = int(page[0])
             x, y = 1, 1
@@ -551,25 +549,26 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                 row_desc(worksheet, x, 0)
 
                 for row, row_name in enumerate(rows):
-                    no_stat = False
+                    stat = 2
                     xx = x
                     yy = y
                     if col_name == "1+2":
-                        no_stat = True
                         if row == 0:
                             cell_name = ''
+                            stat = 0
                         else:
                             cell_name = row_name
+                            stat = 1
                     elif col_name == "2+1":
                         if row == 0:
                             cell_name = ''
-                            no_stat = True
+                            stat = 0
                         else:
                             cell_name = row_name
                     elif '1' in col_name:
                         if row == 0:
                             cell_name = col_name
-                            no_stat = True
+                            stat = 1
                         else:
                             cell_name = '-'.join([col_name, row_name])
                     else:
@@ -583,11 +582,16 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     if cell_name:
                         worksheet.write(x, y, display_type_full(cell_name, diff, dim), text_format if '-' in cell_name else gray_text_format)
 
-                    if not no_stat:
+                    if stat == 2:
                         for key_id, key in enumerate(keys):
                             filters = {'type': cell_name, 'difficulty': diff, 'dimension': dim}
                             stat = get(df, filters, key)
                             worksheet.write(x+1+key_id, y, stat, number_format if '-' in cell_name else gray_number_format)
+                    elif stat == 1:
+                        for key_id, key in enumerate(keys):
+                            filters = {'type': cell_name[1:], 'difficulty': diff, 'dimension': dim}
+                            stat = get(df1, filters, key)
+                            worksheet.write(x+1+key_id, y, stat, gray_number_format)
                 
                     y += 1
                 
