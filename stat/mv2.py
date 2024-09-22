@@ -5,13 +5,14 @@ import numpy as np
 import os
 import xlsxwriter
 
-in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
-
-out1 = "mv2/mv2_stats.csv"
-
-out2 = "mv2/mv2_stats_mean.xlsx"
-
-out3 = "mv2/mv2_stats_workload.xlsx"
+# in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
+in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\data_Minesweeper Variants 2\\puzzle\\all_puzzles_dedup.txt"
+# out1 = "mv2/mv2_stats.csv"
+out1 = "mv2/mv2_stats_update1.csv"
+# out2 = "mv2/mv2_stats_mean.xlsx"
+out2 = "mv2/mv2_stats_mean_update1.xlsx"
+# out3 = "mv2/mv2_stats_workload.xlsx"
+out3 = "mv2/mv2_stats_workload_update1.xlsx"
 
 '''
 statistics of 
@@ -23,19 +24,27 @@ statistics of
 per level type
 '''
 
-LHS = ["H", "C", "S", "G", "F", "B", "T"]
-LHS_BONUS = ["Z", "G'"]
-RHS = ["X", "D", "P", "E", "M", "A", "L"]
-RHS_BONUS = ["X'", "I"]
+LHS = ["2H", "2C", "2S", "2G", "2F", "2B", "2T"]
+LHS_BONUS = ["2Z", "2G'"]
+RHS = ["2X", "2D", "2P", "2E", "2M", "2A", "2L"]
+RHS_BONUS = ["2X'", "2I"]
 # ATTACH = ["EX", "LD", "LM", "EA", "LX", "ED", "LP"]
-ATTACH = [("E", "X"), ("L", "D"), ("L", "M"), ("E", "A"), ("L", "X"), ("E", "D"), ("L", "P")]
-ATTACH_BONUS = ["E'", "E^", "L'"]
+ATTACH = [("2E", "2X"), ("2L", "2D"), ("2L", "2M"), ("2E", "2A"), ("2L", "2X"), ("2E", "2D"), ("2L", "2P")]
+ATTACH_BONUS = ["2E'", "2E^", "2L'"]
 # COMBO_ALT = ["GH", "CH", "CG", "FG", "FH", "CF", "BH", "GR"]
-COMBO_ALT = [("G", "H"), ("C", "H"), ("C", "G"), ("F", "G"), ("F", "H"), ("C", "F"), ("B", "H"), ("G", "R")]
-RHS_CLUE = ["X", "D", "P", "M", "A"]
-RHS_BOARD = ["E", "L"]
-TAGS = ["E-#", "L-#"]
-PAGES = ["F", "!", "+ʹ", "&ʹ", "¿", "5", "6", "7", "8", "!!", "+ʹ!", "&ʹ!", "¿¡", "5!", "6!", "7!", "8!"]
+COMBO_ALT = [("2G", "2H"), ("2C", "2H"), ("2C", "2G"), ("2F", "2G"), ("2F", "2H"), ("2C", "2F"), ("2B", "2H"), ("2G", "R")]
+RHS_CLUE = ["2X", "2D", "2P", "2M", "2A"]
+RHS_BOARD = ["2E", "2L"]
+TAGS = ["2E-2#", "2L-2#"]
+
+# LHS = ["Q", "C", "T", "O", "D", "S", "B"]
+# LHS_BONUS = ["D'", "A", "H", "T'"]
+# RHS = ["M", "L", "W", "N", "X", "P", "E"]
+# RHS_BONUS = ["X'", "K", "W'", "E'"]
+LHS_1 = ["1Q", "1C", "1T", "1O", "1D", "1S", "1B"]
+RHS_1 = ["1M", "1L", "1W", "1N", "1X", "1P", "1E"]
+
+PAGES = ["F", "!", "+ʹ", "&ʹ", "¿", "5", "6", "7", "8", "!!", "+ʹ!", "&ʹ!", "¿!", "5!", "6!", "7!", "8!", "5+", "6+", "7+", "8+", "5+!", "6+!", "7+!", "8+!"]
 
 ATTACH_ORDER = ['-'.join(a) for a in ATTACH]
 MAINPAGE = ["V", *LHS, *RHS]
@@ -43,6 +52,9 @@ LHS_FULL = [*LHS, *LHS_BONUS]
 RHS_FULL = [*RHS, *RHS_BONUS]
 GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, *TAGS, *ATTACH_ORDER]
 GALLERY_ROWS = ['', *LHS, *LHS_BONUS]
+CROSS_GALLERY_COLUMNS = ["1+2", *RHS_1, "2+1", *RHS]
+CROSS_GALLERY_ROWS1 = ["", *LHS]
+CROSS_GALLERY_ROWS2 = ["", *LHS_1]
 
 FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues', 'category']
 KEYS = FIELDS[4:9]
@@ -58,12 +70,12 @@ FONT = 'Aptos'
 
 def get_type(level_type):
     '''
-    [2B][2X'][@c] -> ("B", "X'")
+    [2B][2X'][@c] -> ("2B", "2X'")
     [V] -> ("V",)
-    [2E][2#] -> ("E", "#")
-    [2G][R+] -> ("G", "R+")
+    [2E][2#] -> ("2E", "2#")
+    [2G][R+] -> ("2G", "R")
     '''
-    pattern = re.compile(r'\[\d?([A-Za-z^\'#]+)\+?\]')
+    pattern = re.compile(r'\[([\dA-Za-z^\'#]+)\+?\]')
     matches = pattern.findall(level_type)
     return tuple(matches)
 
@@ -103,18 +115,20 @@ def get_category(types):
             if types in ATTACH:
                 return '&' # attach
             return '&?' # attach (bonus)
-        if types[0] in RHS_BOARD and types[1] == '#':
+        if types[0] in RHS_BOARD and types[1] == '2#':
             return '#' # tag
         if types in COMBO_ALT:
             return '+\'' # combo alt
+        if (types[0] in LHS_1 and types[1] in RHS) or (types[0] in LHS and types[1] in RHS_1):
+            return 'x' # crossover
         return '&\'' # attach bonus
     if types[0] in LHS:
-        if types[2] == '#':
+        if types[2] == '2#':
             return '#+' # tag combo
         elif types[2] in RHS:
             return '&+' # attach combo
     elif types[0] in LHS_BONUS:
-        if types[2] == '#':
+        if types[2] == '2#':
             return '#+?' # tag combo (bonus)
         elif types[2] in RHS:
             return '&+?' # attach combo (bonus)
@@ -194,16 +208,33 @@ def get(df, filters, key):
         df = df[df[k] == v]
     return df[key].mean()
 
+def remove2_at_start(s):
+    return s[1:] if s.startswith('2') else s
+
 def display_type(csv_type, diff, dim):
+    types = map(remove2_at_start, csv_type.split('-'))
     return ''.join([
-        *csv_type.split('-'),
+        *types,
         '!' * diff,
         str(dim)
     ])
 
 def display_type_tuple(tuple_type, diff, dim):
+    types = map(remove2_at_start, tuple_type)
     return ''.join([
-        *tuple_type,
+        *types,
+        '!' * diff,
+        str(dim)
+    ])
+
+def display_type_full(csv_type, diff, dim):
+    # if dim == 0:
+    #     return ''.join([
+    #         csv_type,
+    #         '!' * diff
+    #     ])
+    return ''.join([
+        *csv_type.split('-'),
         '!' * diff,
         str(dim)
     ])
@@ -269,11 +300,24 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
         if desc:
             worksheet.set_column(0, 0, 14)
         return worksheet
+    
+    def cond_format(worksheet):
+        # white to green color scale
+        if not desc:
+            worksheet.conditional_format(1, 1, 100, 100, {
+                # 'type': '3_color_scale',
+                # 'min_color': "#FFFFFF",
+                # 'mid_color': "#92D050",
+                # 'max_color': "#00B050"
+                'type': '2_color_scale',
+                'min_color': "#FFFFFF",
+                'max_color': "#92D050"
+            })
 
     for page_id, page in enumerate(PAGES):
         diff = page.count('!')
-
-        if page_id < 2 or page_id == 9:
+        
+        if page_id < 2 or page == '!!':
             worksheet = create_worksheet(page)
             x, y = 1, 1
 
@@ -312,15 +356,7 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
             x += 1 # empty row
 
             if diff == 2:
-                # row_desc(worksheet, x, 0)
-                # y = 6
-                # for dim in [5, 6, 7, 8]:
-                #     worksheet.write(x, y, display_type("#", diff, dim), text_format)
-                #     for key_id, key in enumerate(keys):
-                #         filters = {'category': '#', 'difficulty': diff, 'dimension': dim}
-                #         stat = get(df, filters, key)
-                #         worksheet.write(x+1+key_id, y, stat, number_format)
-                #     y += 1
+                cond_format(worksheet)
                 continue
             
             for row, l, r in zip(range(2), ("+", "&+"), ("&", "#")):
@@ -352,6 +388,8 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     stat = get(df, filters, key)
                     worksheet.write(x+1+key_id, y, stat, number_format)
                 y += 1
+            
+            cond_format(worksheet)
 
         elif page.startswith('+'):
             worksheet = create_worksheet(page)
@@ -371,10 +409,12 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     y += 1
                 y = 1
                 x += y_offset
+            
+            cond_format(worksheet)
 
         elif page.startswith('¿'):
-            if page.endswith('¡'):
-                diff = 1
+            # if page.endswith('¡'):
+            #     diff = 1
             worksheet = create_worksheet(page)
             x, y = 1, 1
 
@@ -392,6 +432,8 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     y += 1
                 y = 1
                 x += y_offset
+            
+            cond_format(worksheet)
             
         elif page.startswith('&'):
             worksheet = create_worksheet(page)
@@ -419,20 +461,20 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
             row_desc(worksheet, x, 0)
             y = 1
             for col, dim in enumerate([5, 6, 7, 8]):
-                worksheet.write(x, y, display_type("E'", diff, dim), text_format)
+                worksheet.write(x, y, display_type("2E'", diff, dim), text_format)
 
                 for key_id, key in enumerate(keys):
-                    filters = {'type': "E'", 'difficulty': diff, 'dimension': dim}
+                    filters = {'type': "2E'", 'difficulty': diff, 'dimension': dim}
                     stat = get(df, filters, key)
                     worksheet.write(x+1+key_id, y, stat, number_format)
 
                 y += 1
             y = 6
             for col, dim in enumerate([5, 6, 7, 8]):
-                worksheet.write(x, y, display_type("L'", diff, dim), text_format)
+                worksheet.write(x, y, display_type("2L'", diff, dim), text_format)
 
                 for key_id, key in enumerate(keys):
-                    filters = {'type': "L'", 'difficulty': diff, 'dimension': dim}
+                    filters = {'type': "2L'", 'difficulty': diff, 'dimension': dim}
                     stat = get(df, filters, key)
                     worksheet.write(x+1+key_id, y, stat, number_format)
 
@@ -442,10 +484,10 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
             row_desc(worksheet, x, 0)
             y = 1
             for col, dim in enumerate([5, 6, 7, 8]):
-                worksheet.write(x, y, display_type("E^", diff, dim), text_format)
+                worksheet.write(x, y, display_type("2E^", diff, dim), text_format)
 
                 for key_id, key in enumerate(keys):
-                    filters = {'type': "E^", 'difficulty': diff, 'dimension': dim}
+                    filters = {'type': "2E^", 'difficulty': diff, 'dimension': dim}
                     stat = get(df, filters, key)
                     worksheet.write(x+1+key_id, y, stat, number_format)
 
@@ -457,16 +499,18 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
             row_desc(worksheet, x, 0)
             y = 1
             for col, dim in enumerate([5, 6, 7, 8]):
-                worksheet.write(x, y, display_type_tuple(("E", "L"), diff, dim), text_format)
+                worksheet.write(x, y, display_type_tuple(("2E", "2L"), diff, dim), text_format)
 
                 for key_id, key in enumerate(keys):
-                    filters = {'type': "E-L", 'difficulty': diff, 'dimension': dim}
+                    filters = {'type': "2E-2L", 'difficulty': diff, 'dimension': dim}
                     stat = get(df, filters, key)
                     worksheet.write(x+1+key_id, y, stat, number_format)
                 
                 y += 1
 
-        elif page[0].isdigit():
+            cond_format(worksheet)
+
+        elif page[0].isdigit() and len(page) > 1 and page[1] != '+':
             worksheet = create_worksheet(page)
             dim = int(page[0])
             x, y = 1, 1
@@ -491,17 +535,101 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
 
                     y += 1
 
-                    if col_name == "I":
+                    if col_name == "2I":
                         y += 1
                 
                 x += y_offset
                 y = 1
+            
+            cond_format(worksheet)
+        
+        elif page[0].isdigit() and len(page) > 1 and page[1] == '+':
+        
+        # if page == '5+':
+            worksheet = create_worksheet(page)
+            dim = int(page[0])
+            x, y = 1, 1
+            rows = CROSS_GALLERY_ROWS1
+            y_base = 1
+
+            for col, col_name in enumerate(CROSS_GALLERY_COLUMNS):
+                row_desc(worksheet, x, 0)
+
+                for row, row_name in enumerate(rows):
+                    no_stat = False
+                    xx = x
+                    yy = y
+                    if col_name == "1+2":
+                        if row == 0:
+                            cell_name = ''
+                            no_stat = True
+                        else:
+                            cell_name = row_name
+                            # (1, 2) -> (3, 1), (1, 3) -> (5, 1)
+                            xx = 2 * (y - y_base) + 1
+                            yy = y_base
+                    elif col_name == "2+1":
+                        no_stat = True
+                        if row == 0:
+                            cell_name = ''
+                        else:
+                            cell_name = row_name
+                            # (1, 12) -> (3, 11), (1, 13) -> (5, 11)
+                            xx = 2 * (y - y_base) + 1
+                            yy = y_base
+                    elif '1' in col_name:
+                        if row == 0:
+                            cell_name = col_name
+                            no_stat = True
+                            # (3, 1) -> (1, 2), (5, 1) -> (1, 3)
+                            xx = 1
+                            yy = (x - 1) // 2 + y_base
+                        else:
+                            cell_name = '-'.join([row_name, col_name])
+                            # (3, 2) -> (3, 2), (3, 3) <-> (5, 2)
+                            xx = (y - y_base) * 2 + 1
+                            yy = y_base + (x - 1) // 2
+                    else:
+                        if row == 0:
+                            cell_name = col_name
+                            # (3, 11) -> (1, 12), (5, 11) -> (1, 13)
+                            xx = 1
+                            yy = (x - 1) // 2 + y_base
+                        else:
+                            cell_name = '-'.join([row_name, col_name])
+                            # (3, 12) -> (3, 12), (3, 13) <-> (5, 12)
+                            xx = (y - y_base) * 2 + 1
+                            yy = y_base + (x - 1) // 2
+                    
+                    # print(f"x={x}, y={y}, xx={xx}, yy={yy}, row_name={row_name}, col_name={col_name}, cell_name={cell_name}")
+                    
+                    if cell_name:
+                        worksheet.write(xx, yy, display_type_full(cell_name, diff, dim), text_format if '-' in cell_name else gray_text_format)
+
+                    if not no_stat:
+                        for key_id, key in enumerate(keys):
+                            filters = {'type': cell_name, 'difficulty': diff, 'dimension': dim}
+                            stat = get(df, filters, key)
+                            worksheet.write(xx+1+key_id, yy, stat, number_format if '-' in cell_name else gray_number_format)
+                
+                    y += 1
+                
+                if col_name == "1E":
+                    x = 1
+                    y_base = 11
+                    y = y_base
+                    rows = CROSS_GALLERY_ROWS2
+                else:
+                    x += y_offset
+                    y = y_base
+        
+            cond_format(worksheet)
     
     workbook.close()
 
 def main():
     # read_file(in1, out1)
-    analyze(out1, out2)
+    # analyze(out1, out2)
     analyze(out1, out3, keys=['workload'], desc=False)
 
 if __name__ == "__main__":
