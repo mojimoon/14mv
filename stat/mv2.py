@@ -52,9 +52,9 @@ LHS_FULL = [*LHS, *LHS_BONUS]
 RHS_FULL = [*RHS, *RHS_BONUS]
 GALLERY_COLUMNS = ["V", *RHS, *RHS_BONUS, *TAGS, *ATTACH_ORDER]
 GALLERY_ROWS = ['', *LHS, *LHS_BONUS]
-CROSS_GALLERY_COLUMNS = ["1+2", *RHS_1, "2+1", *RHS]
-CROSS_GALLERY_ROWS1 = ["", *LHS]
-CROSS_GALLERY_ROWS2 = ["", *LHS_1]
+CROSS_GALLERY_COLUMNS = ["1+2", *LHS, "2+1", *LHS_1]
+CROSS_GALLERY_ROWS1 = ["", *RHS_1]
+CROSS_GALLERY_ROWS2 = ["", *RHS]
 
 FIELDS = ['id', 'type', 'dimension', 'difficulty', 'max_clues', 'workload', 'starting_clues', 'starting_questions', 'number_clues', 'category']
 KEYS = FIELDS[4:9]
@@ -305,10 +305,6 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
         # white to green color scale
         if not desc:
             worksheet.conditional_format(1, 1, 100, 100, {
-                # 'type': '3_color_scale',
-                # 'min_color': "#FFFFFF",
-                # 'mid_color': "#92D050",
-                # 'max_color': "#00B050"
                 'type': '2_color_scale',
                 'min_color': "#FFFFFF",
                 'max_color': "#92D050"
@@ -316,6 +312,7 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
 
     for page_id, page in enumerate(PAGES):
         diff = page.count('!')
+        
         
         if page_id < 2 or page == '!!':
             worksheet = create_worksheet(page)
@@ -544,8 +541,6 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
             cond_format(worksheet)
         
         elif page[0].isdigit() and len(page) > 1 and page[1] == '+':
-        
-        # if page == '5+':
             worksheet = create_worksheet(page)
             dim = int(page[0])
             x, y = 1, 1
@@ -560,63 +555,45 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
                     xx = x
                     yy = y
                     if col_name == "1+2":
-                        if row == 0:
-                            cell_name = ''
-                            no_stat = True
-                        else:
-                            cell_name = row_name
-                            # (1, 2) -> (3, 1), (1, 3) -> (5, 1)
-                            xx = 2 * (y - y_base) + 1
-                            yy = y_base
-                    elif col_name == "2+1":
                         no_stat = True
                         if row == 0:
                             cell_name = ''
                         else:
                             cell_name = row_name
-                            # (1, 12) -> (3, 11), (1, 13) -> (5, 11)
-                            xx = 2 * (y - y_base) + 1
-                            yy = y_base
+                    elif col_name == "2+1":
+                        if row == 0:
+                            cell_name = ''
+                            no_stat = True
+                        else:
+                            cell_name = row_name
                     elif '1' in col_name:
                         if row == 0:
                             cell_name = col_name
                             no_stat = True
-                            # (3, 1) -> (1, 2), (5, 1) -> (1, 3)
-                            xx = 1
-                            yy = (x - 1) // 2 + y_base
                         else:
-                            cell_name = '-'.join([row_name, col_name])
-                            # (3, 2) -> (3, 2), (3, 3) <-> (5, 2)
-                            xx = (y - y_base) * 2 + 1
-                            yy = y_base + (x - 1) // 2
+                            cell_name = '-'.join([col_name, row_name])
                     else:
                         if row == 0:
                             cell_name = col_name
-                            # (3, 11) -> (1, 12), (5, 11) -> (1, 13)
-                            xx = 1
-                            yy = (x - 1) // 2 + y_base
                         else:
-                            cell_name = '-'.join([row_name, col_name])
-                            # (3, 12) -> (3, 12), (3, 13) <-> (5, 12)
-                            xx = (y - y_base) * 2 + 1
-                            yy = y_base + (x - 1) // 2
+                            cell_name = '-'.join([col_name, row_name])
                     
-                    # print(f"x={x}, y={y}, xx={xx}, yy={yy}, row_name={row_name}, col_name={col_name}, cell_name={cell_name}")
+                    # print(f"x={x}, y={y}, row_name={row_name}, col_name={col_name}, cell_name={cell_name}, no_stat={no_stat}")
                     
                     if cell_name:
-                        worksheet.write(xx, yy, display_type_full(cell_name, diff, dim), text_format if '-' in cell_name else gray_text_format)
+                        worksheet.write(x, y, display_type_full(cell_name, diff, dim), text_format if '-' in cell_name else gray_text_format)
 
                     if not no_stat:
                         for key_id, key in enumerate(keys):
                             filters = {'type': cell_name, 'difficulty': diff, 'dimension': dim}
                             stat = get(df, filters, key)
-                            worksheet.write(xx+1+key_id, yy, stat, number_format if '-' in cell_name else gray_number_format)
+                            worksheet.write(x+1+key_id, y, stat, number_format if '-' in cell_name else gray_number_format)
                 
                     y += 1
                 
-                if col_name == "1E":
+                if col_name == "2T":
                     x = 1
-                    y_base = 11
+                    y_base = y + 1
                     y = y_base
                     rows = CROSS_GALLERY_ROWS2
                 else:
