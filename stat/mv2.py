@@ -504,7 +504,7 @@ def analyze(in_file, out_file, keys=KEYS, desc=True):
 
             cond_format(worksheet)
 
-        elif page[0].isdigit() and len(page) > 1 and page[1] != '+':
+        elif page[0].isdigit() and (len(page) == 1 or page[1] == '!'):
             worksheet = create_worksheet(page)
             dim = int(page[0])
             x, y = 1, 1
