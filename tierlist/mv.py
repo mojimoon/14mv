@@ -35,6 +35,8 @@ colors = [
     (0xfd, 0xfd, 0xfd), # white
     (0x9c, 0x9c, 0x9c), # gray
     (0xff, 0xff, 0x00), # yellow
+    (0xf3, 0xd7, 0xa2), # orange
+    (0xb2, 0xa5, 0x8f), # gray orange
 ]
 
 SIZE = 256
@@ -70,6 +72,8 @@ def create(msg, opt=0):
     save(canvas)
 
 def main():
+    global counter
+    
     create("V")
     for a in LHS:
         create(a)
@@ -81,11 +85,6 @@ def main():
         create(a, 1)
     for b in RHS_BONUS:
         create(b, 1)
-
-    create("+", 2)
-    for a in LHS_FULL:
-        for b in RHS_FULL:
-            create(a + b, (a in LHS_BONUS) or (b in RHS_BONUS))
     
     create("+'", 2)
     for ab in COMBO_ALT:
@@ -94,13 +93,25 @@ def main():
     create("#")
     create("#'", 1)
 
-    create("#+", 2)
+    create("+", 2)
+    comb_id = counter
     for a in LHS_FULL:
-        for b in TAG:
+        for b in RHS_FULL:
+            opt = 0
+            if a in LHS_BONUS or b in RHS_BONUS:
+                opt = 1
+            if b == "M":
+                opt += 3
+            create(a + b, opt)
+
+    create("#+", 2)
+    tag_comb_id = counter
+    for b in TAG:
+        for a in LHS_FULL:
             create(a + b, (a in LHS_BONUS) or (b == "#'"))
     
-    for f in os.listdir(replaces_dir):
-        shutil.copy(os.path.join(replaces_dir, f), output_dir)
+    shutil.copy(os.path.join(replaces_dir, "comb.jpg"), os.path.join(output_dir, f"{comb_id:03d}.jpg"))
+    shutil.copy(os.path.join(replaces_dir, "tag_comb.jpg"), os.path.join(output_dir, f"{tag_comb_id:03d}.jpg"))
 
 if __name__ == "__main__":
     main()
