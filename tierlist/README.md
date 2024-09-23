@@ -4,18 +4,16 @@
 
 A complete tier list for 14 Minesweeper Variants (14MV), including all Combinations (+, +').
 
-To help you locate a specific variant, placeholder cells (?, +, +', #+) are used to indicate the start of a new section.
+- Golden placeholder cells (?, +, +', #+) are placed at the start of a new section.
+- Grey cells are bonus variants.
+- Orange and soft orange cells denote the start of a new gallery row.
 
-Grey cells are bonus variants.
-
-# 14 Minesweeper Variants 2 Full Tier List (Restyled)
+# 14 Minesweeper Variants 2 Full Tier List
 
 [Tiermaker](https://tiermaker.com/create/14-minesweeper-variants-2-full-combination-andattachment-17377235-8)
 
-A complete tier list for 14 Minesweeper Variants 2 (14MV2), including all Combinations (+, +') and Attachments (&, &'). 
+A complete tier list for 14 Minesweeper Variants 2 (14MV2), including all Combinations (+, +'), Attachments (&, &') and crossovers with 14MV.
 
-To help you locate a specific variant, placeholder cells (?, +, +', &, &', &+, #, #+, 2+1, 1+2) are used to indicate the start of a new section.
-
-Grey cells are bonus variants. 
-
-Soft orange cells indicate the start of a new gallery row.
+- Golden placeholder cells (?, +, +', &, &', &+, #, #+, 2+1, 1+2) are placed at the start of a new section.
+- Grey cells are bonus variants.
+- Orange and soft orange cells denote the start of a new gallery row.
