@@ -7,7 +7,7 @@ import json
 import re
 from mv2_tracker import *
 
-src = "D:/game/steamapps/common/14 Minesweeper Variants 2/MineVar/puzzle/all_puzzles_dedup.txt"
+src = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\data_Minesweeper Variants 2\\puzzle\\all_puzzles_dedup.txt"
 
 def main():
     with open(src, "r") as f:
@@ -16,7 +16,7 @@ def main():
 
         seen = set()
 
-        count = [[[0 for _ in range(8)] for _ in range(3)]]
+        count = [[[0 for _ in range(8)] for _ in range(5)]]
         total = 0
 
         for line in problems:
@@ -66,11 +66,15 @@ def main():
             
             if is_attachment_alt(brackets):
                 update(count, '&\'', bangs)
+            
+            if is_crossover(brackets):
+                update(count, 'F1', 3)
+                update(count, f'{size}+', 3 + bangs)
         
         print(total)
 
         print('(')
-        for i in range(3):
+        for i in range(5):
             print('(', end='')
             for j in range(8):
                 print(count[0][i][j], end=', ' if j < 7 else '')

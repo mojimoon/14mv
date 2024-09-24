@@ -26,6 +26,8 @@ ATTACHMENT_BONUS = ("2E'", "2E^", "2L'")
 EXCL_ATTACHMENTS = (
     ("2E", "2P"), ("2E", "2M"), ("2L", "2A")
 )
+LHS_1 = ("1Q", "1C", "1T", "1O", "1D", "1S", "1B")
+RHS_1 = ("1M", "1L", "1W", "1N", "1X", "1P", "1E")
 
 CATEGORY = {
     "F": (0, 0),
@@ -44,16 +46,27 @@ CATEGORY = {
     7: (0, 6),
     "7!": (1, 6),
     8: (0, 7),
-    "8!": (1, 7)
+    "8!": (1, 7),
+    "F1": (3, 0),
+    "5+": (3, 4),
+    "6+": (3, 5),
+    "7+": (3, 6),
+    "8+": (3, 7),
+    "5+!": (4, 4),
+    "6+!": (4, 5),
+    "7+!": (4, 6),
+    "8+!": (4, 7),
 }
 
 COUNTER = (
     (53492, 3200, 6253, 1600, 18994, 19000, 17741, 18950),
     (49422, 2923, 6219, 1454, 16559, 17348, 17878, 18090),
-    (3634, 0, 0, 0, 0, 0, 0, 0),
+    (3634, 0, 0, 0, 674, 1094, 846, 1020),
+    (72633, 0, 0, 0, 9800, 9800, 9613, 9800),
+    (0, 0, 0, 0, 7760, 8353, 8647, 8860),
 )
 
-TOTAL = 159709
+TOTAL = 232343
 
 def get_bangs(problem):
     for i in range(0, len(problem)):
@@ -125,6 +138,9 @@ def is_combination_alt(brackets):
     return len(brackets) == 2 and ((brackets[0] in LHS and brackets[1] in LHS) \
         or (brackets[0] == '2G' and brackets[1] == 'R+'))
 
+def is_crossover(brackets):
+    return len(brackets) == 2 and (brackets[0] in LHS_1 or brackets[1] in RHS_1)
+
 def update(progress, category, bangs, ult=False):
     progress[0][bangs][CATEGORY[category][1]] += 1
     if ult:
@@ -135,7 +151,7 @@ def main():
     for i in range(0, 4):
         if os.path.exists(os.path.join(save_path, f'{i}', 'minevar_v2.save')):
             has_save = True
-            progress = [[[0 for _ in range(8)] for _ in range(3)] for _ in range(2)]
+            progress = [[[0 for _ in range(8)] for _ in range(5)] for _ in range(2)]
             total = 0
             total_ult = 0
 
@@ -212,6 +228,10 @@ def main():
                     if is_attachment_alt(brackets):
                         # &'
                         update(progress, '&\'', bangs, ult)
+                    
+                    if is_crossover(brackets):
+                        update(progress, 'F1', 3, ult)
+                        update(progress, f'{size}+', 3 + bangs, ult)
             
             print_progress(progress, [total, total_ult])
 
