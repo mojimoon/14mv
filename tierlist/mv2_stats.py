@@ -22,9 +22,6 @@ RHS_1 = ["M", "L", "W", "N", "X", "P", "E"]
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 
-# os.makedirs(os.path.join(pwd, "mv2", "output"), exist_ok=True)
-# output_dir = os.path.join(pwd, "mv2", "output")
-
 os.makedirs(os.path.join(pwd, "mv2", "output_stat"), exist_ok=True)
 output_dir = os.path.join(pwd, "mv2", "output_stat")
 
@@ -80,19 +77,17 @@ class TempImage:
 
 images = []
 
-def save(img, d0, d1):
-    # global counter
-    # counter += 1
-    # img.save(os.path.join(output_dir, f"{counter:03d}.jpg"))
-    images.append(TempImage(img, d0, d1))
+def save(img):
+    global counter
+    counter += 1
+    img.save(os.path.join(output_dir, f"{counter:03d}.jpg"))
+    # images.append(TempImage(img, d0, d1))
 
 def create(msg, tname, opt=0):
     canvas = Image.new("RGB", (SIZE, SIZE), color=(0, 0, 0))
     foreground = colors[opt]
     draw = ImageDraw.Draw(canvas)
     _font = font[count_chars(msg) - 1]
-    # if "^" in msg:
-    #     _font = font[3]
     if msg in ["1+2", "2+1"]:
         _font = font[1]
     elif count_chars(msg) == 1 and tname:
@@ -126,7 +121,7 @@ def create(msg, tname, opt=0):
             x2 = SIZE - BORDER - w2 - 10
             draw.text((x2, y2), d2, font=font[6], fill=colors[3])
 
-    save(canvas, d0, d1)
+    save(canvas)
 
 def create_1_2(a, b, sub1, sub2, opt=0):
     canvas = Image.new("RGB", (SIZE, SIZE), color=(0, 0, 0))
@@ -179,10 +174,10 @@ def create_1_2(a, b, sub1, sub2, opt=0):
     draw.rectangle([0, 0, SIZE, BORDER], fill=foreground)
     draw.rectangle([SIZE - BORDER, 0, SIZE, SIZE], fill=foreground)
     draw.rectangle([0, SIZE - BORDER, SIZE, SIZE], fill=foreground)
-    save(canvas, d0, d1)
+    save(canvas)
 
 def main():
-    # global counter
+    global counter
 
     create("V", "V", 0)
     for a in LHS:
@@ -190,81 +185,81 @@ def main():
     for b in RHS:
         create(b, "2" + b, 0)
     
-    # create("?", "", 2)
+    create("?", "", 2)
     for a in LHS_BONUS:
         create(a, "2" + a, 1)
     for b in RHS_BONUS:
         create(b, "2" + b, 1)
     
-    # create("+'", "", 2)
+    create("+'", "", 2)
     for ab in COMBO_ALT:
         if ab == "GR":
             create(ab, "2G-R", 1)
         else:
             create(ab, "2" + ab[0] + "-2" + ab[1], 1)
     
-    # create("&", "", 2)
+    create("&", "", 2)
     for b in RHS_BOARD:
         for c in RHS_CLUE:
             create(b + c, "2" + b + "-2" + c, (b + c not in ATTACH_ORD))
     
-    # create("&'", "", 2)
+    create("&'", "", 2)
     for b in ATTACH_BONUS:
         create(b, "2" + b, 1)
     create("EL", "2E-2L", 1)
     
-    # create("#", "", 2)
+    create("#", "", 2)
     for b in RHS_BOARD:
         create(b + "#", "2" + b + "-2#", 0)
     
-    # create("+", "", 2)
-    # comb_id = counter
+    create("+", "", 2)
+    comb_id = counter
     for a in LHS_FULL:
         for b in RHS_FULL:
             opt = 0
             if a in LHS_BONUS or b in RHS_BONUS:
                 opt = 1
-            # if b == "X":
-            #     opt += 3
+            if b == "X":
+                opt += 3
             create(a + b, "2" + a + "-2" + b, opt)
 
-    # create("&+", "", 2)
-    # attach_comb_id = counter
+    create("&+", "", 2)
+    attach_comb_id = counter
     for a in LHS_FULL:
         for bc in ATTACH_ORD:
             opt = 0
             if a in LHS_BONUS:
                 opt = 1
-            # if bc == "EX":
-            #     opt += 3
+            if bc == "EX":
+                opt += 3
             create(a + bc, "2" + a + "-2" + bc[0] + "-2" + bc[1], opt)
     
-    # create("#+", "", 2)
-    # tag_comb_id = counter
+    create("#+", "", 2)
+    tag_comb_id = counter
     for a in LHS_FULL:
         for b in RHS_BOARD:
             create(a + b + "#", "2" + a + "-2" + b + "-2#", a in LHS_BONUS)
     
-    # create("2+1", "", 2)
+    create("2+1", "", 2)
     for a in LHS:
         for b in RHS_1:
-            # create_1_2(a, b, 2, 1, 3 if b == "M" else 0)
-            create_1_2(a, b, 2, 1, 0)
+            create_1_2(a, b, 2, 1, 3 if b == "M" else 0)
+            # create_1_2(a, b, 2, 1, 0)
     
-    # create("1+2", "", 2)
+    create("1+2", "", 2)
     for a in LHS_1:
         for b in RHS:
-            # create_1_2(a, b, 1, 2, 3 if b == "X" else 0)
-            create_1_2(a, b, 1, 2, 0)
+            create_1_2(a, b, 1, 2, 3 if b == "X" else 0)
+            # create_1_2(a, b, 1, 2, 0)
 
-    # shutil.copy(os.path.join(replaces_dir, "comb.jpg"), os.path.join(output_dir, f"{comb_id:03d}.jpg"))
-    # shutil.copy(os.path.join(replaces_dir, "attach_comb.jpg"), os.path.join(output_dir, f"{attach_comb_id:03d}.jpg"))
-    # shutil.copy(os.path.join(replaces_dir, "tag_comb.jpg"), os.path.join(output_dir, f"{tag_comb_id:03d}.jpg"))
+    shutil.copy(os.path.join(replaces_dir, "comb.jpg"), os.path.join(output_dir, f"{comb_id:03d}.jpg"))
+    shutil.copy(os.path.join(replaces_dir, "attach_comb.jpg"), os.path.join(output_dir, f"{attach_comb_id:03d}.jpg"))
+    shutil.copy(os.path.join(replaces_dir, "tag_comb.jpg"), os.path.join(output_dir, f"{tag_comb_id:03d}.jpg"))
 
-    images.sort()
-    images.reverse()
-    for i, img in enumerate(images):
-        img.img.save(os.path.join(output_dir, f"{i+1:03d}.jpg"))
+    # images.sort()
+    # images.reverse()
+    # for i, img in enumerate(images):
+    #     img.img.save(os.path.join(output_dir, f"{i+1:03d}.jpg"))
 
 if __name__ == "__main__":
     main()
