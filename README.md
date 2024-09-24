@@ -14,7 +14,7 @@ A complete tier list for 14 Minesweeper Variants (14MV), including all Combinati
 - Grey cells are bonus variants.
 - Orange and soft orange cells denote the start of a new gallery row.
 
-![](assets/14mv.jpeg)
+![](tierlist/assets/14mv.jpeg)
 
 ### 14 Minesweeper Variants 2 Full Tier List
 
@@ -26,7 +26,7 @@ A complete tier list for 14 Minesweeper Variants 2 (14MV2), including all Combin
 - Grey cells are bonus variants.
 - Orange and soft orange cells denote the start of a new gallery row.
 
-![](assets/14mv2.jpeg)
+![](tierlist/assets/14mv2.jpeg)
 
 ### 14 Minesweeper Variants 2 Workload Tier List
 
@@ -36,11 +36,11 @@ Workload for a puzzle is defined as $\sum_{i=1}^{n} (\text{Clue}_i - 1)$, where 
 
 Normal Order:
 
-![](assets/14mv2_stats.jpeg)
+![](tierlist/assets/14mv2_stats.jpeg)
 
 Ordered by workload:
 
-![](assets/14mv2_stats_sorted.jpeg)
+![](tierlist/assets/14mv2_stats_sorted.jpeg)
 
 ## [Statistics](/stat/)
 
