@@ -5,7 +5,7 @@ import numpy as np
 import os
 import xlsxwriter
 
-in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\data_Minesweeper Variants 2\\puzzle\\all_puzzles_dedup.txt"
+in1 = "D:\\game\\steamapps\\common\\14 Minesweeper Variants 2\\MineVar\\puzzle\\all_puzzles_dedup.txt"
 out1 = "mv2/mv2_stats_update1.csv"
 out2 = "mv2/mv2_stats_mean_update1.xlsx"
 out3 = "mv2/mv2_stats_workload_update1.xlsx"

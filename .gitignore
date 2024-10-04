@@ -1,3 +1,4 @@
 *.pyc
 *.ttf
 tierlist/mv2/psd/*
+stat/misc/*
