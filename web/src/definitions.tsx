@@ -195,6 +195,7 @@ export class Board {
         this.r = rules;
         this.c = new Array(x);
         if (cells) {
+            assert(cells.length == x * y, 'Invalid cell count. anticipated: ' + x * y + ' actual: ' + cells.length);
             for (let i = 0; i < x; i++) {
                 this.c[i] = new Array(y);
                 for (let j = 0; j < y; j++) {
@@ -211,10 +212,24 @@ export class Board {
         }
         console.log('Board created:', this);
     }
+    parse(cells: string[]) {
+        assert(cells.length == this.x * this.y, 'Invalid cell count. anticipated: ' + this.x * this.y + ' actual: ' + cells.length);
+        for (let i = 0; i < this.x; i++) {
+            for (let j = 0; j < this.y; j++) {
+                this.c[i][j] = parseCell(cells[i * this.y + j]);
+            }
+        }
+    }
     get(x: number, y: number): Cell {
         return this.c[x][y];
     }
     set(x: number, y: number, cell: Cell) {
         this.c[x][y] = cell;
+    }
+}
+
+function assert(arg0: boolean, arg1: string) {
+    if (!arg0) {
+        console.error(arg1);
     }
 }
