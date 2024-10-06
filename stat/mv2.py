@@ -29,7 +29,7 @@ RHS_BONUS = ["2X'", "2I"]
 ATTACH = [("2E", "2X"), ("2L", "2D"), ("2L", "2M"), ("2E", "2A"), ("2L", "2X"), ("2E", "2D"), ("2L", "2P")]
 ATTACH_BONUS = ["2E'", "2E^", "2L'"]
 # COMBO_ALT = ["GH", "CH", "CG", "FG", "FH", "CF", "BH", "GR"]
-COMBO_ALT = [("2G", "2H"), ("2C", "2H"), ("2C", "2G"), ("2F", "2G"), ("2F", "2H"), ("2C", "2F"), ("2B", "2H"), ("2G", "R")]
+COMBO_ALT = [("2G", "2H"), ("2C", "2H"), ("2C", "2G"), ("2F", "2G"), ("2F", "2H"), ("2C", "2F"), ("2B", "2H"), ("2G", "R+")]
 RHS_CLUE = ["2X", "2D", "2P", "2M", "2A"]
 RHS_BOARD = ["2E", "2L"]
 TAGS = ["2E-2#", "2L-2#"]
@@ -70,9 +70,9 @@ def get_type(level_type):
     [2B][2X'][@c] -> ("2B", "2X'")
     [V] -> ("V",)
     [2E][2#] -> ("2E", "2#")
-    [2G][R+] -> ("2G", "R")
+    [2G][R+] -> ("2G", "R+")
     '''
-    pattern = re.compile(r'\[([\dA-Za-z^\'#]+)\+?\]')
+    pattern = re.compile(r'\[([\dA-Za-z^\'#\+]+)\+?\]')
     matches = pattern.findall(level_type)
     return tuple(matches)
 

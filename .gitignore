@@ -1,5 +1,5 @@
 *.pyc
 *.ttf
 tierlist/mv2/psd/*
-stat/misc/*
+misc/*
 stat/mv2/mv2_stats_sorted.xlsx
