@@ -72,7 +72,7 @@ def get_type(level_type):
     [2E][2#] -> ("2E", "2#")
     [2G][R+] -> ("2G", "R+")
     '''
-    pattern = re.compile(r'\[([\dA-Za-z^\'#\+]+)\+?\]')
+    pattern = re.compile(r'\[([\dA-Z^\'#\+]+)\+?\]')
     matches = pattern.findall(level_type)
     return tuple(matches)
 

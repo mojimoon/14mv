@@ -47,7 +47,7 @@ KEY_DICT = {
 FONT = 'Aptos'
 
 def get_type(level_type):
-    pattern = re.compile(r'\[([A-Za-z\'#]+)\+?\]')
+    pattern = re.compile(r'\[([A-Z\'#]+)\+?\]')
     matches = pattern.findall(level_type)
     return tuple(matches)
 
